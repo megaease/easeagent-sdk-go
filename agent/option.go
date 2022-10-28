@@ -19,8 +19,8 @@ var (
 
 type Options struct {
 	Name                          string  `yaml:"name"`
-	System                        string  `yaml:"system"`
-	SampleRate                    float64 `yaml:"sampleRate" jsonschema:"required,minimum=0,maximum=1"`
+	TracingEnable                 bool    `yaml:"tracing.enable"`
+	TracingSampleRate             float64 `yaml:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
 	ReporterOutputServer          string  `yaml:"reporter.output.server"`
 	ReporterOutputServerTlsEnable bool    `yaml:"reporter.output.server.tls.enable"`
 	ReporterOutputServerTlsKey    string  `yaml:"reporter.output.server.tls.key"`
@@ -34,8 +34,7 @@ type Options struct {
 
 func New() *Options {
 	o := &Options{
-		Name:   "demo-service",
-		System: "demo-system",
+		Name: "demo-service",
 	}
 	var err error
 	o.HomeDir, err = filepath.Abs(path.Dir(os.Args[0]))

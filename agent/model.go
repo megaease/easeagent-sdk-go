@@ -14,7 +14,6 @@ type Span struct {
 	ModelSpanModel
 	Type    string `json:"type,omitempty"`
 	Service string `json:"service,omitempty"`
-	System  string `json:"system,omitempty"`
 }
 
 // MarshalJSON exports our Model into the correct format for the Zipkin V2 API.

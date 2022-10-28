@@ -57,11 +57,11 @@ func NewAgent(hostPort string, options *Options) *Agent {
 		}()
 	} else {
 		traceReporterUrl := options.ReporterOutputServer + options.ReporterTracingSenderUrl
-		reporter = zipkinHttpReporter.NewReporter(traceReporterUrl, zipkinHttpReporter.Client(httpClient(options)), zipkinHttpReporter.Serializer(spanSerializer()))
+		reporter = zipkinHttpReporter.NewReporter(traceReporterUrl, zipkinHttpReporter.Client(httpClient(options)), zipkinHttpReporter.Serializer(spanSerializer(options)))
 		// reporter = zipkinHttpReporter.NewReporter(traceReporterServerURL+traceUrl, zipkinHttpReporter.Client(httpClient()))
 	}
 	traceTags := make(map[string]string)
-	sampler, err := zipkingo.NewBoundarySampler(options.SampleRate, time.Now().Unix())
+	sampler, err := zipkingo.NewBoundarySampler(options.TracingSampleRate, time.Now().Unix())
 	if err != nil {
 		exitf("new sampler error: %s", err.Error())
 	}
@@ -117,21 +117,23 @@ func newTLSConfig(clientCert, clientKey, caCert string) (*tls.Config, error) {
 
 }
 
-func spanSerializer() reporter.SpanSerializer {
-	return &SpanJSONSerializer{}
+func spanSerializer(options *Options) reporter.SpanSerializer {
+	return &SpanJSONSerializer{
+		options: options,
+	}
 }
 
 type SpanJSONSerializer struct {
+	options *Options
 }
 
-func (SpanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) {
+func (s SpanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) {
 	newSpans := make([]*Span, 0)
 	for i := 0; i < len(spans); i++ {
 		span := &Span{
 			ModelSpanModel: ModelSpanModel(*spans[i]),
 			Type:           "log-tracing",
-			Service:        "akwei-demo-service",
-			System:         "akwei-demo-system",
+			Service:        s.options.Name,
 		}
 		newSpans = append(newSpans, span)
 	}
