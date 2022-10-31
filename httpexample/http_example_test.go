@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"log"
 	"megaease/easeagent-sdk-go/agent"
+	"megaease/easeagent-sdk-go/tracing"
 	"net/http"
 	"time"
-
-	"github.com/openzipkin/zipkin-go"
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
@@ -36,7 +35,7 @@ func someFunc(url string) http.HandlerFunc {
 
 		// retrieve span from context (created by server middleware)
 		// agent.Default().Tracer().
-		span := zipkin.SpanFromContext(r.Context())
+		span := tracing.SpanFromContext(r.Context())
 		span.Tag("custom_key", "some value")
 
 		// doing some expensive calculations....
@@ -51,7 +50,7 @@ func someFunc(url string) http.HandlerFunc {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		res, err := agent.Default().HttpRequest(r.Context(), newRequest)
+		res, err := tracing.DEFAULT_HTTP_CLIENT.Do(r.Context(), newRequest)
 		if err != nil {
 			log.Printf("call to other_function returned error: %+v\n", err)
 			http.Error(w, err.Error(), 500)
@@ -74,7 +73,7 @@ func Example_main() {
 	router.HandleFunc("/headers", headers)
 	router.HandleFunc("/some_function", someFunc("http://"+hostPort))
 	router.HandleFunc("/other_function", otherFunc())
-	http.ListenAndServe(":8090", agent.Default().HttpServerMiddleware()(router))
+	http.ListenAndServe(":8090", agent.Default().WrapHttpServerHeader(router))
 
 	// http.HandleFunc("/hello", hello)
 	// http.HandleFunc("/headers", headers)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"megaease/easeagent-sdk-go/tracing"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,8 +20,10 @@ var (
 
 type Options struct {
 	Name                          string  `yaml:"name"`
-	TracingEnable                 bool    `yaml:"tracing.enable"`
-	TracingSampleRate             float64 `yaml:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
+	TracingEnable                 bool    `default:"true" yaml:"tracing.enable"`
+	TracingSampleRate             float64 `default:"1" yaml:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
+	TracingSharedSpans            bool    `default:"true" yaml:"tracing.shared.spans"`
+	TracingID128Bit               bool    `default:"true" yaml:"tracing.id128bit"`
 	ReporterOutputServer          string  `yaml:"reporter.output.server"`
 	ReporterOutputServerTlsEnable bool    `yaml:"reporter.output.server.tls.enable"`
 	ReporterOutputServerTlsKey    string  `yaml:"reporter.output.server.tls.key"`
@@ -28,6 +31,7 @@ type Options struct {
 	ReporterOutputServerTlsCaCert string  `yaml:"reporter.output.server.tls.ca_cert"`
 	ReporterTracingSenderUrl      string  `yaml:"reporter.tracing.sender.url"`
 
+	HostPort   string
 	HomeDir    string `yaml:"home-dir" long:"home-dir" description:"Path to the home directory."`
 	ConfigFile string `yaml:"-" short:"f" long:"config-file" description:"Agent configuration from a file(yaml format), other command line flags will be ignored if specified."`
 }
@@ -71,6 +75,32 @@ func (opt *Options) Parse() error {
 			opt.ConfigFile, err)
 	}
 	return nil
+}
+
+func (opt *Options) BuildReporterSpec() *tracing.ReporterSpec {
+	return &tracing.ReporterSpec{
+		SpanSpec: &tracing.SpanSpec{
+			Service: opt.Name,
+		},
+		SenderUrl: opt.ReporterOutputServer + opt.ReporterTracingSenderUrl,
+		TlsEnable: opt.ReporterOutputServerTlsEnable,
+		TlsKey:    opt.ReporterOutputServerTlsKey,
+		TlsCert:   opt.ReporterOutputServerTlsCert,
+		TlsCaCert: opt.ReporterOutputServerTlsCaCert,
+	}
+}
+
+func (opt *Options) BuildTracingSpec() *tracing.TracingSpec {
+	return &tracing.TracingSpec{
+		HostPort:           opt.HostPort,
+		ServiceName:        opt.Name,
+		TracingEnable:      opt.TracingEnable,
+		TracingSampleRate:  opt.TracingSampleRate,
+		TracingSharedSpans: opt.TracingSharedSpans,
+		TracingID128Bit:    opt.TracingID128Bit,
+		TracingTags:        make(map[string]string),
+		ReporterSpec:       opt.BuildReporterSpec(),
+	}
 }
 
 func configFile() (string, error) {

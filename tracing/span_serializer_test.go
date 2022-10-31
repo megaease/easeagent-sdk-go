@@ -1,4 +1,4 @@
-package agent
+package tracing
 
 import (
 	"fmt"
