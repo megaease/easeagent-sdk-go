@@ -1,10 +1,9 @@
-package agent
+package tracing
 
 import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"megaease/easeagent-sdk-go/tracing"
 	"os"
 	"path"
 	"path/filepath"
@@ -20,7 +19,7 @@ var (
 
 type Options struct {
 	Name                          string  `yaml:"name"`
-	TracingEnable                 bool    `default:"true" yaml:"tracing.enable"`
+	TracingEnable                 bool    `default:"true" yaml:"enable"`
 	TracingSampleRate             float64 `default:"1" yaml:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
 	TracingSharedSpans            bool    `default:"true" yaml:"tracing.shared.spans"`
 	TracingID128Bit               bool    `default:"true" yaml:"tracing.id128bit"`
@@ -77,9 +76,9 @@ func (opt *Options) Parse() error {
 	return nil
 }
 
-func (opt *Options) BuildReporterSpec() *tracing.ReporterSpec {
-	return &tracing.ReporterSpec{
-		SpanSpec: &tracing.SpanSpec{
+func (opt *Options) BuildReporterSpec() *ReporterSpec {
+	return &ReporterSpec{
+		SpanSpec: &SpanSpec{
 			Service: opt.Name,
 		},
 		SenderUrl: opt.ReporterOutputServer + opt.ReporterTracingSenderUrl,
@@ -90,8 +89,8 @@ func (opt *Options) BuildReporterSpec() *tracing.ReporterSpec {
 	}
 }
 
-func (opt *Options) BuildTracingSpec() *tracing.TracingSpec {
-	return &tracing.TracingSpec{
+func (opt *Options) BuildTracingSpec() *TracingSpec {
+	return &TracingSpec{
 		HostPort:           opt.HostPort,
 		ServiceName:        opt.Name,
 		TracingEnable:      opt.TracingEnable,

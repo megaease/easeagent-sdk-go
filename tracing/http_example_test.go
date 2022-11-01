@@ -1,10 +1,8 @@
-package httpexample
+package tracing
 
 import (
 	"fmt"
 	"log"
-	"megaease/easeagent-sdk-go/agent"
-	"megaease/easeagent-sdk-go/tracing"
 	"net/http"
 	"time"
 )
