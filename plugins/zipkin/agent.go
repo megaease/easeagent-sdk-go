@@ -1,4 +1,4 @@
-// package tracing
+// package zipkin
 
 // import (
 // 	"net/http"

@@ -1,4 +1,4 @@
-package tracing
+package zipkin
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
-
 	fmt.Fprintf(w, "hello\n")
 }
 
@@ -60,7 +59,6 @@ func someFunc(url string) http.HandlerFunc {
 }
 
 func Example_main() {
-
 	hostPort := "127.0.0.1:8090" // your host and server port
 	agent.InitDefault(hostPort)
 	defer agent.CloseDefault()
