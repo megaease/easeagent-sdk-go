@@ -23,11 +23,14 @@ type Spec struct {
 	TracingSharedSpans            bool    `default:"true" json:"tracing.shared.spans"`
 	TracingID128Bit               bool    `default:"true" json:"tracing.id128bit"`
 	ReporterOutputServer          string  `json:"reporter.output.server"`
-	ReporterOutputServerTlsEnable bool    `json:"reporter.output.server.tls.enable"`
+	ReporterOutputServerTlsEnable bool    `default:"false" json:"reporter.output.server.tls.enable"`
 	ReporterOutputServerTlsKey    string  `json:"reporter.output.server.tls.key"`
 	ReporterOutputServerTlsCert   string  `json:"reporter.output.server.tls.cert"`
 	ReporterOutputServerTlsCaCert string  `json:"reporter.output.server.tls.ca_cert"`
 	ReporterTracingSenderUrl      string  `json:"reporter.tracing.sender.url"`
+	ReporterAuthEnable            bool    `default:"false" json:"reporter.output.server.auth.enable"`
+	ReporterAuthUser              string  `json:"reporter.output.server.auth.user"`
+	ReporterAuthPassword          string  `json:"reporter.output.server.auth.password"`
 	HostPort                      string
 	HomeDir                       string `json:"home-dir" long:"home-dir" description:"Path to the home directory."`
 }
@@ -65,35 +68,44 @@ func DefaultSpec() plugins.Spec {
 }
 
 // Validate validates the Zipkin spec.
-func (opt Spec) Validate() error {
-	if opt.Name() == "" {
+func (spec Spec) Validate() error {
+	if spec.Name() == "" {
 		return fmt.Errorf("name must not be empty")
+	}
+	if spec.ReporterOutputServerTlsEnable && (spec.ReporterOutputServerTlsKey == "" || spec.ReporterOutputServerTlsCert == "" || spec.ReporterOutputServerTlsCaCert == "") {
+		return fmt.Errorf("tls key,cert,cacert must not be empty when tls enable")
+	}
+	if spec.ReporterAuthEnable && (spec.ReporterAuthUser == "" || spec.ReporterAuthPassword == "") {
+		return fmt.Errorf("auth user and password must not be empty when auth enable")
 	}
 	return nil
 }
 
-func (opt *Spec) BuildReporterSpec() *ReporterSpec {
+func (spec *Spec) BuildReporterSpec() *ReporterSpec {
 	return &ReporterSpec{
 		SpanSpec: &SpanSpec{
-			Service: opt.Name(),
+			Service: spec.Name(),
 		},
-		SenderUrl: opt.ReporterOutputServer + opt.ReporterTracingSenderUrl,
-		TlsEnable: opt.ReporterOutputServerTlsEnable,
-		TlsKey:    opt.ReporterOutputServerTlsKey,
-		TlsCert:   opt.ReporterOutputServerTlsCert,
-		TlsCaCert: opt.ReporterOutputServerTlsCaCert,
+		SenderUrl:    spec.ReporterOutputServer + spec.ReporterTracingSenderUrl,
+		TlsEnable:    spec.ReporterOutputServerTlsEnable,
+		TlsKey:       spec.ReporterOutputServerTlsKey,
+		TlsCert:      spec.ReporterOutputServerTlsCert,
+		TlsCaCert:    spec.ReporterOutputServerTlsCaCert,
+		AuthEnable:   spec.ReporterAuthEnable,
+		AuthUser:     spec.ReporterAuthUser,
+		AuthPassword: spec.ReporterAuthPassword,
 	}
 }
 
-func (opt *Spec) BuildTracingSpec() *TracingSpec {
+func (spec *Spec) BuildTracingSpec() *TracingSpec {
 	return &TracingSpec{
-		HostPort:           opt.HostPort,
-		ServiceName:        opt.Name(),
-		TracingEnable:      opt.TracingEnable,
-		TracingSampleRate:  opt.TracingSampleRate,
-		TracingSharedSpans: opt.TracingSharedSpans,
-		TracingID128Bit:    opt.TracingID128Bit,
+		HostPort:           spec.HostPort,
+		ServiceName:        spec.Name(),
+		TracingEnable:      spec.TracingEnable,
+		TracingSampleRate:  spec.TracingSampleRate,
+		TracingSharedSpans: spec.TracingSharedSpans,
+		TracingID128Bit:    spec.TracingID128Bit,
 		TracingTags:        make(map[string]string),
-		ReporterSpec:       opt.BuildReporterSpec(),
+		ReporterSpec:       spec.BuildReporterSpec(),
 	}
 }

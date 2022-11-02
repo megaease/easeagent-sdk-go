@@ -13,12 +13,21 @@ import (
 )
 
 type ReporterSpec struct {
-	SpanSpec  *SpanSpec
-	SenderUrl string
-	TlsEnable bool
-	TlsKey    string
-	TlsCert   string
-	TlsCaCert string
+	SpanSpec     *SpanSpec
+	SenderUrl    string
+	TlsEnable    bool
+	TlsKey       string
+	TlsCert      string
+	TlsCaCert    string
+	AuthEnable   bool
+	AuthUser     string
+	AuthPassword string
+}
+
+type AuthTransport struct {
+	user     string
+	password string
+	next     http.RoundTripper
 }
 
 func NewReporter(spec *ReporterSpec) reporter.Reporter {
@@ -34,18 +43,28 @@ func NewReporter(spec *ReporterSpec) reporter.Reporter {
 	return reporter
 }
 
+func basicAuthTransport(spec *ReporterSpec, next http.RoundTripper) http.RoundTripper {
+	if !spec.AuthEnable {
+		return next
+	}
+	return &AuthTransport{
+		user:     spec.AuthUser,
+		password: spec.AuthPassword,
+		next:     next,
+	}
+}
+
 func httpClient(spec *ReporterSpec) *http.Client {
+	transport := http.DefaultTransport
 	if spec.TlsEnable {
 		tlsConfig, err := newTLSConfig(spec.TlsCert, spec.TlsKey, spec.TlsCaCert)
 		if err != nil {
 			exitf("error create tls config: %s", err.Error())
 		}
-		transport := &http.Transport{TLSClientConfig: tlsConfig}
-		client := &http.Client{Transport: transport}
-		return client
-	} else {
-		return &http.Client{}
+		transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
+	transport = basicAuthTransport(spec, transport)
+	return &http.Client{Transport: transport}
 }
 
 func newTLSConfig(clientCert, clientKey, caCert string) (*tls.Config, error) {
@@ -64,4 +83,9 @@ func newTLSConfig(clientCert, clientKey, caCert string) (*tls.Config, error) {
 	tlsConfig.BuildNameToCertificate()
 	return &tlsConfig, err
 
+}
+
+func (a *AuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.SetBasicAuth(a.user, a.password)
+	return a.next.RoundTrip(req)
 }
