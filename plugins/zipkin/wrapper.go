@@ -7,19 +7,19 @@ import (
 )
 
 type (
-	HttpHandlerWrapper struct {
+	HTTPHandlerWrapper struct {
 		handlerFunc http.HandlerFunc
 	}
 
-	HttpClientWrapper struct {
+	HTTPClientWrapper struct {
 		client *zipkinhttp.Client
 	}
 )
 
-func (h *HttpHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.handlerFunc(w, r)
 }
 
-func (c *HttpClientWrapper) Do(req *http.Request) (*http.Response, error) {
+func (c *HTTPClientWrapper) Do(req *http.Request) (*http.Response, error) {
 	return c.client.DoWithAppSpan(req, req.Method+" "+req.URL.Path)
 }

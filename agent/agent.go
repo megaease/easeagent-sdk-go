@@ -8,7 +8,6 @@ import (
 	"sort"
 
 	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
-	"github.com/megaease/easemesh/easeagent-sdk-go/plugins/zipkin"
 	"golang.org/x/exp/maps"
 )
 
@@ -30,9 +29,6 @@ var (
 	// DefaultAgentConfig is the global default agent.
 	DefaultAgentConfig = &Config{
 		Address: agentAddr,
-		Plugins: []plugins.Spec{
-			zipkin.DefaultSpec(),
-		},
 	}
 
 	// DefaultAgent is the default global agent.
@@ -155,7 +151,7 @@ func (a *Agent) WrapUserClient(httpDoer plugins.HTTPDoer) plugins.HTTPDoer {
 	return httpDoer
 }
 
-func (a *Agent) WrapHttpRequest(parent context.Context, req *http.Request) *http.Request {
+func (a *Agent) WrapHTTPRequest(parent context.Context, req *http.Request) *http.Request {
 	for _, plug := range a.plugins {
 		wrapper, ok := plug.(plugins.UserClientRequestWrapper)
 		if !ok {

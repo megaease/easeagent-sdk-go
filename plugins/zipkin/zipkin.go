@@ -11,11 +11,6 @@ import (
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
 )
 
-// DefaultSpec returns the default spec of EaseMesh.
-func DefaultSpec() plugins.Spec {
-	return LoadGlobalOptions()
-}
-
 func init() {
 	cons := &plugins.Constructor{
 		Kind:         Kind,
@@ -34,14 +29,12 @@ type (
 )
 
 func New(spec plugins.Spec) (plugins.Plugin, error) {
-	if option, ok := spec.(*Options); ok {
-		zipkinPlugin := NewPlugin(option.BuildTracingSpec())
+	if spec, ok := spec.(*Spec); ok {
+		zipkinPlugin := NewPlugin(spec.BuildTracingSpec())
 		return zipkinPlugin, nil
 	}
-	return nil, fmt.Errorf("spec must be *zipkin.Options")
+	return nil, fmt.Errorf("spec must be *zipkin.Spec")
 }
-
-var DEFAULT_PLUGIN *ZipkinPlugin
 
 func NewPlugin(spec *TracingSpec) *ZipkinPlugin {
 	return &ZipkinPlugin{
@@ -66,7 +59,7 @@ func (z *ZipkinPlugin) WrapUserHandlerFunc(handlerFunc http.HandlerFunc) http.Ha
 	hander := zipkinhttp.NewServerMiddleware(
 		z.tracing.tracer, zipkinhttp.TagResponseSize(true),
 	)
-	return hander(&HttpHandlerWrapper{
+	return hander(&HTTPHandlerWrapper{
 		handlerFunc: handlerFunc,
 	}).ServeHTTP
 }
@@ -80,7 +73,7 @@ func (z *ZipkinPlugin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
 		if err != nil {
 			log.Fatalf("unable to create client: %+v\n", err)
 		}
-		return &HttpClientWrapper{
+		return &HTTPClientWrapper{
 			client: client,
 		}
 	}
