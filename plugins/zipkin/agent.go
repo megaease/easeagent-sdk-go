@@ -1,4 +1,4 @@
-// package zipkin
+package zipkin
 
 // import (
 // 	"net/http"
