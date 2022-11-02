@@ -1,30 +1,67 @@
 package zipkin
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
 	"github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
 )
+
+// DefaultSpec returns the default spec of EaseMesh.
+func DefaultSpec() plugins.Spec {
+	return LoadGlobalOptions()
+}
+
+func init() {
+	cons := &plugins.Constructor{
+		Kind:         Kind,
+		DefaultSpec:  DefaultSpec,
+		SystemPlugin: false,
+		NewInstance:  New,
+	}
+	plugins.Register(cons)
+}
+
+type (
+	// EaseMesh is the EaseMesh dedicated plugin.
+	// EaseMesh struct {
+	// 	spec Spec
+
+	// 	agentInfo []byte
+	// 	headers   atomic.Value // type: []string
+	// }
+
+	// // AgentInfo stores agent information.
+	// AgentInfo struct {
+	// 	Type    string `json:"type"`
+	// 	Version string `json:"version"`
+	// }
+
+	// // AgentConfig is the config pushed to agent.
+	// AgentConfig struct {
+	// 	Headers string `json:"easeagent.progress.forwarded.headers"`
+	// }
+	HandlerWrapper struct {
+		handlerFunc http.HandlerFunc
+	}
+)
+
+func New(spec plugins.Spec) (plugins.Plugin, error) {
+	if option, ok := spec.(*Options); ok {
+		zipkinPlugin := NewPlugin(option.BuildTracingSpec())
+		return zipkinPlugin, nil
+	}
+	return nil, fmt.Errorf("spec must be *zipkin.Options")
+}
 
 var DEFAULT_PLUGIN *ZipkinPlugin
 
 type ZipkinPlugin struct {
 	spec    *TracingSpec
 	tracing *ZipkinTracing
-}
-
-func Default() *ZipkinPlugin {
-	return DEFAULT_PLUGIN
-}
-
-func InitDefault(spec *TracingSpec) {
-	InitDefaultTracing(spec)
-	DEFAULT_PLUGIN = &ZipkinPlugin{
-		tracing: DEFAULT_TRACING,
-	}
-	DEFAULT_HTTP_CLIENT = DEFAULT_PLUGIN.WrapHttpClient(nil)
 }
 
 func NewPlugin(spec *TracingSpec) *ZipkinPlugin {
@@ -53,6 +90,18 @@ func (z *ZipkinPlugin) WrapHttpServerHandler(fn http.Handler) http.Handler {
 	return zipkinhttp.NewServerMiddleware(
 		z.tracing.tracer, zipkinhttp.TagResponseSize(true),
 	)(fn)
+}
+func (h *HandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.handlerFunc(w, r)
+}
+
+func (z *ZipkinPlugin) WrapUserHandlerFunc(handlerFunc http.HandlerFunc) http.HandlerFunc {
+	hander := zipkinhttp.NewServerMiddleware(
+		z.tracing.tracer, zipkinhttp.TagResponseSize(true),
+	)
+	return hander(&HandlerWrapper{
+		handlerFunc: handlerFunc,
+	}).ServeHTTP
 }
 
 func (z *ZipkinPlugin) WrapHttpClient(c *http.Client) HttpClient {

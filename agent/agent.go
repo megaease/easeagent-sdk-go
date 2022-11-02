@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
+	"github.com/megaease/easemesh/easeagent-sdk-go/plugins/zipkin"
 	"golang.org/x/exp/maps"
 )
 
@@ -28,6 +29,9 @@ var (
 	// DefaultAgentConfig is the global default agent.
 	DefaultAgentConfig = &Config{
 		Address: agentAddr,
+		Plugins: []plugins.Spec{
+			zipkin.DefaultSpec(),
+		},
 	}
 
 	// DefaultAgent is the default global agent.
@@ -90,6 +94,7 @@ func New(config *Config) (*Agent, error) {
 		}
 		plugs = append(plugs, plug)
 	}
+	agent.plugins = plugs
 
 	return agent, nil
 }

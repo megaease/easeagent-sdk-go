@@ -8,17 +8,22 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
 	"gopkg.in/yaml.v2"
 )
 
-var (
+const (
+	// Kind is the kind of Zipkin plugin.
+	Kind                             = "ZipKin"
 	DEFAULT_MEGAEASE_SDK_CONFIG_FILE = "/megaease/sdk/agent.yml"
-	MEGAEASE_SDK_CONFIG_FILE         = os.Getenv("MEGAEASE_SDK_CONFIG_FILE")
-	GlobalOptions                    *Options
 )
 
+var MEGAEASE_SDK_CONFIG_FILE = os.Getenv("MEGAEASE_SDK_CONFIG_FILE")
+
+// Options is the Zipkin spec.
 type Options struct {
-	Name                          string  `yaml:"name"`
+	plugins.BaseSpec              `json:",inline"`
+	ServiceName                   string  `yaml:"name"`
 	TracingEnable                 bool    `default:"true" yaml:"enable"`
 	TracingSampleRate             float64 `default:"1" yaml:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
 	TracingSharedSpans            bool    `default:"true" yaml:"tracing.shared.spans"`
@@ -35,9 +40,11 @@ type Options struct {
 	ConfigFile string `yaml:"-" short:"f" long:"config-file" description:"Agent configuration from a file(yaml format), other command line flags will be ignored if specified."`
 }
 
-func New() *Options {
+func NewOptions() *Options {
 	o := &Options{
-		Name: "demo-service",
+		BaseSpec: plugins.BaseSpec{
+			NameField: "demo-service",
+		},
 	}
 	var err error
 	o.HomeDir, err = filepath.Abs(path.Dir(os.Args[0]))
@@ -48,13 +55,23 @@ func New() *Options {
 	return o
 }
 
-func InitGlobalOptions() {
-	options := New()
+func LoadGlobalOptions() *Options {
+	options := NewOptions()
 	err := options.Parse()
 	if err != nil {
 		log.Panicf("failed to Parse Options path: %v", err)
 	}
-	GlobalOptions = options
+	options.KindField = Kind
+	options.NameField = options.ServiceName
+	return options
+}
+
+// Validate validates the Zipkin spec.
+func (opt Options) Validate() error {
+	if opt.ServiceName == "" {
+		return fmt.Errorf("name must not be empty")
+	}
+	return nil
 }
 
 func (opt *Options) Parse() error {
@@ -79,7 +96,7 @@ func (opt *Options) Parse() error {
 func (opt *Options) BuildReporterSpec() *ReporterSpec {
 	return &ReporterSpec{
 		SpanSpec: &SpanSpec{
-			Service: opt.Name,
+			Service: opt.ServiceName,
 		},
 		SenderUrl: opt.ReporterOutputServer + opt.ReporterTracingSenderUrl,
 		TlsEnable: opt.ReporterOutputServerTlsEnable,
@@ -92,7 +109,7 @@ func (opt *Options) BuildReporterSpec() *ReporterSpec {
 func (opt *Options) BuildTracingSpec() *TracingSpec {
 	return &TracingSpec{
 		HostPort:           opt.HostPort,
-		ServiceName:        opt.Name,
+		ServiceName:        opt.ServiceName,
 		TracingEnable:      opt.TracingEnable,
 		TracingSampleRate:  opt.TracingSampleRate,
 		TracingSharedSpans: opt.TracingSharedSpans,
