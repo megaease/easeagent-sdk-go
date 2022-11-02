@@ -3,7 +3,7 @@ package Health
 import (
 	"net/http"
 
-	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
+	"github.com/megaease/easeagent-sdk-go/plugins"
 )
 
 const (

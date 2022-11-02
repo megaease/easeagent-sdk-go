@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
+	"github.com/megaease/easeagent-sdk-go/plugins"
 	"golang.org/x/exp/slices"
 )
 

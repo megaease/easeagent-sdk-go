@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	// https://github.com/megaease/easemesh/blob/main/docs/sidecar-protocol.md#easemesh-traffic-hosting
+	// https://github.com/megaease/blob/main/docs/sidecar-protocol.md#easemesh-traffic-hosting
 	agentPort = 9900
 
 	agentVersion = "v0.1.0"

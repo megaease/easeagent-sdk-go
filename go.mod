@@ -1,4 +1,4 @@
-module github.com/megaease/easemesh/easeagent-sdk-go
+module github.com/megaease/easeagent-sdk-go
 
 go 1.18
 

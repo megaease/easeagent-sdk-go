@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
+	"github.com/megaease/easeagent-sdk-go/plugins"
 	"github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
 )

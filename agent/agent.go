@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/megaease/easemesh/easeagent-sdk-go/plugins"
+	"github.com/megaease/easeagent-sdk-go/plugins"
 	"golang.org/x/exp/maps"
 )
 
 const (
 	// DefualtAgentPort is the default listeaning port for agent.
-	// https://github.com/megaease/easemesh/blob/main/docs/sidecar-protocol.md#easemesh-traffic-hosting
+	// https://github.com/megaease/blob/main/docs/sidecar-protocol.md#easemesh-traffic-hosting
 	DefualtAgentPort = 9900
 
 	// DefaultAgentType is the default global agent type.

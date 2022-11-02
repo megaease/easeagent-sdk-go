@@ -20,7 +20,7 @@ package zero
 import (
 	"net/http"
 
-	"github.com/megaease/easemesh/easeagent-sdk-go/stdlib"
+	"github.com/megaease/easeagent-sdk-go/stdlib"
 )
 
 // ServeDefault is the same with stdlib ServeDefault.
