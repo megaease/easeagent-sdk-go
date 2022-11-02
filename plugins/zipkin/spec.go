@@ -51,6 +51,9 @@ func NewSpec() *Spec {
 		ReporterOutputServerTlsCert:   "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----",
 		ReporterOutputServerTlsCaCert: "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----",
 		ReporterTracingSenderUrl:      "/application-tracing-log",
+		ReporterAuthEnable:            false,
+		ReporterAuthUser:              "",
+		ReporterAuthPassword:          "",
 		HostPort:                      ":8080",
 	}
 	var err error
