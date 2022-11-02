@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -27,6 +28,11 @@ type (
 	// UserClientWrapper wraps the user client.
 	UserClientWrapper interface {
 		WrapUserClient(client HTTPDoer) HTTPDoer
+	}
+
+	// UserClientRequestWrapper wraps the user client.
+	UserClientRequestWrapper interface {
+		WrapUserClientRequest(parent context.Context, req *http.Request) *http.Request
 	}
 
 	// HTTPDoer is the interface to do HTTP request.

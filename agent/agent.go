@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -152,6 +153,18 @@ func (a *Agent) WrapUserClient(httpDoer plugins.HTTPDoer) plugins.HTTPDoer {
 	}
 
 	return httpDoer
+}
+
+func (a *Agent) WrapHttpRequest(parent context.Context, req *http.Request) *http.Request {
+	for _, plug := range a.plugins {
+		wrapper, ok := plug.(plugins.UserClientRequestWrapper)
+		if !ok {
+			continue
+		}
+		req = wrapper.WrapUserClientRequest(parent, req)
+	}
+
+	return req
 }
 
 // ServeDefaultAgent just runs global default agent in HTTP server,

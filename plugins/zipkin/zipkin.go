@@ -1,6 +1,7 @@
 package zipkin
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,26 +27,9 @@ func init() {
 }
 
 type (
-	// EaseMesh is the EaseMesh dedicated plugin.
-	// EaseMesh struct {
-	// 	spec Spec
-
-	// 	agentInfo []byte
-	// 	headers   atomic.Value // type: []string
-	// }
-
-	// // AgentInfo stores agent information.
-	// AgentInfo struct {
-	// 	Type    string `json:"type"`
-	// 	Version string `json:"version"`
-	// }
-
-	// // AgentConfig is the config pushed to agent.
-	// AgentConfig struct {
-	// 	Headers string `json:"easeagent.progress.forwarded.headers"`
-	// }
-	HandlerWrapper struct {
-		handlerFunc http.HandlerFunc
+	ZipkinPlugin struct {
+		spec    *TracingSpec
+		tracing *ZipkinTracing
 	}
 )
 
@@ -59,19 +43,11 @@ func New(spec plugins.Spec) (plugins.Plugin, error) {
 
 var DEFAULT_PLUGIN *ZipkinPlugin
 
-type ZipkinPlugin struct {
-	spec    *TracingSpec
-	tracing *ZipkinTracing
-}
-
 func NewPlugin(spec *TracingSpec) *ZipkinPlugin {
 	return &ZipkinPlugin{
+		spec:    spec,
 		tracing: NewTracing(spec),
 	}
-}
-
-func CloseDefault() error {
-	return DEFAULT_PLUGIN.Close()
 }
 
 func (z *ZipkinPlugin) Tracer() *zipkin.Tracer {
@@ -86,31 +62,34 @@ func (z *ZipkinPlugin) Tracing() *ZipkinTracing {
 	return z.tracing
 }
 
-func (z *ZipkinPlugin) WrapHttpServerHandler(fn http.Handler) http.Handler {
-	return zipkinhttp.NewServerMiddleware(
-		z.tracing.tracer, zipkinhttp.TagResponseSize(true),
-	)(fn)
-}
-func (h *HandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.handlerFunc(w, r)
-}
-
 func (z *ZipkinPlugin) WrapUserHandlerFunc(handlerFunc http.HandlerFunc) http.HandlerFunc {
 	hander := zipkinhttp.NewServerMiddleware(
 		z.tracing.tracer, zipkinhttp.TagResponseSize(true),
 	)
-	return hander(&HandlerWrapper{
+	return hander(&HttpHandlerWrapper{
 		handlerFunc: handlerFunc,
 	}).ServeHTTP
 }
 
-func (z *ZipkinPlugin) WrapHttpClient(c *http.Client) HttpClient {
-	client, err := zipkinhttp.NewClient(z.tracing.tracer,
-		zipkinhttp.WithClient(c),
-		zipkinhttp.ClientTrace(z.spec.TracingEnable),
-	)
-	if err != nil {
-		log.Fatalf("unable to create client: %+v\n", err)
+func (z *ZipkinPlugin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
+	if original, ok := c.(*http.Client); ok {
+		client, err := zipkinhttp.NewClient(z.tracing.tracer,
+			zipkinhttp.WithClient(original),
+			zipkinhttp.ClientTrace(z.spec.TracingEnable),
+		)
+		if err != nil {
+			log.Fatalf("unable to create client: %+v\n", err)
+		}
+		return &HttpClientWrapper{
+			client: client,
+		}
 	}
-	return NewHttpClient(client)
+	log.Println("can warp plugins.HTTPDoer for zipkin, it must be a *http.Client")
+	return c
+}
+
+func (z *ZipkinPlugin) WrapUserClientRequest(current context.Context, req *http.Request) *http.Request {
+	span := zipkin.SpanFromContext(current)
+	ctx := zipkin.NewContext(req.Context(), span)
+	return req.WithContext(ctx)
 }
