@@ -97,11 +97,10 @@ func (spec *Spec) SetKind(kind string) *Spec {
 }
 
 func (spec *Spec) BuildReporterSpec() *ReporterSpec {
-	return &ReporterSpec{
+	reporterSpec := &ReporterSpec{
 		SpanSpec: &SpanSpec{
 			Service: spec.Name(),
 		},
-		SenderUrl:    spec.ReporterOutputServer + spec.ReporterTracingSenderUrl,
 		TlsEnable:    spec.ReporterOutputServerTlsEnable,
 		TlsKey:       spec.ReporterOutputServerTlsKey,
 		TlsCert:      spec.ReporterOutputServerTlsCert,
@@ -110,6 +109,12 @@ func (spec *Spec) BuildReporterSpec() *ReporterSpec {
 		AuthUser:     spec.ReporterAuthUser,
 		AuthPassword: spec.ReporterAuthPassword,
 	}
+	if spec.ReporterOutputServer != "" {
+		reporterSpec.SenderUrl = spec.ReporterOutputServer + spec.ReporterTracingSenderUrl
+	} else {
+		reporterSpec.SenderUrl = ""
+	}
+	return reporterSpec
 }
 
 func (spec *Spec) BuildTracingSpec() *TracingSpec {
