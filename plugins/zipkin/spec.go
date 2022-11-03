@@ -17,7 +17,7 @@ const (
 // Spec is the Zipkin spec.
 type Spec struct {
 	plugins.BaseSpec              `json:",inline"`
-	TracingEnable                 bool    `default:"true" json:"enable"`
+	TracingEnable                 bool    `default:"true" json:"tracing.enable"`
 	TracingSampleRate             float64 `default:"1" json:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
 	TracingSharedSpans            bool    `default:"true" json:"tracing.shared.spans"`
 	TracingID128Bit               bool    `default:"true" json:"tracing.id128bit"`
@@ -30,7 +30,7 @@ type Spec struct {
 	ReporterAuthEnable            bool    `default:"false" json:"reporter.output.server.auth.enable"`
 	ReporterAuthUser              string  `json:"reporter.output.server.auth.user"`
 	ReporterAuthPassword          string  `json:"reporter.output.server.auth.password"`
-	HostPort                      string
+	HostPort                      string  `json:"hostport"`
 }
 
 func NewSpec() *Spec {
