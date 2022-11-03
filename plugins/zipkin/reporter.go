@@ -58,9 +58,7 @@ func httpClient(spec *ReporterSpec) *http.Client {
 	transport := http.DefaultTransport
 	if spec.TlsEnable {
 		tlsConfig, err := newTLSConfig(spec.TlsCert, spec.TlsKey, spec.TlsCaCert)
-		if err != nil {
-			exitf("error create tls config: %s", err.Error())
-		}
+		exitfIfErr(err, "error create tls config: %v", err)
 		transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
 	transport = basicAuthTransport(spec, transport)

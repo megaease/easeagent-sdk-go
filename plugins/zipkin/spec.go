@@ -1,13 +1,16 @@
 package zipkin
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/megaease/easeagent-sdk-go/plugins"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -84,6 +87,15 @@ func (spec Spec) Validate() error {
 	return nil
 }
 
+func (spec *Spec) SetHostPort(hostPort string) *Spec {
+	spec.HostPort = hostPort
+	return spec
+}
+func (spec *Spec) SetKind(kind string) *Spec {
+	spec.KindField = kind
+	return spec
+}
+
 func (spec *Spec) BuildReporterSpec() *ReporterSpec {
 	return &ReporterSpec{
 		SpanSpec: &SpanSpec{
@@ -111,4 +123,20 @@ func (spec *Spec) BuildTracingSpec() *TracingSpec {
 		TracingTags:        make(map[string]string),
 		ReporterSpec:       spec.BuildReporterSpec(),
 	}
+}
+
+func LoadSpecFromYamlFile(filePath string) *Spec {
+	buff, err := ioutil.ReadFile(filePath)
+	exitfIfErr(err, "read config file :%s failed: %v", filePath, err)
+	var body map[string]interface{}
+	err = yaml.Unmarshal(buff, &body)
+	exitfIfErr(err, "unmarshal yaml file %s to map failed: %v",
+		filePath, err)
+	bodyJson, err := json.Marshal(body)
+	exitfIfErr(err, "marshal yaml file %s to json failed: %v",
+		filePath, err)
+	var spec Spec
+	err = json.Unmarshal(bodyJson, &spec)
+	exitfIfErr(err, "unmarshal %s to %T failed: %v", bodyJson, spec, err)
+	return spec.SetKind(Kind)
 }

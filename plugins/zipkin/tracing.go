@@ -2,7 +2,7 @@ package zipkin
 
 import (
 	"fmt"
-	"os"
+	"net"
 	"time"
 
 	zipkingo "github.com/openzipkin/zipkin-go"
@@ -46,16 +46,12 @@ func CloseDefaultTracing() error {
 }
 
 func NewTracing(spec *TracingSpec) *ZipkinTracing {
-	endpoint, err := zipkin.NewEndpoint(spec.ServiceName, spec.HostPort)
-	if err != nil {
-		exitf("error creating zipkin endpoint: %s", err.Error())
-	}
+	endpoint, err := newEndpoint(spec.ServiceName, spec.HostPort)
+	exitfIfErr(err, "error creating zipkin endpoint: %v", err)
 
 	reporter := NewReporter(spec.ReporterSpec)
 	sampler, err := zipkingo.NewBoundarySampler(spec.TracingSampleRate, time.Now().Unix())
-	if err != nil {
-		exitf("new sampler error: %s", err.Error())
-	}
+	exitfIfErr(err, "new sampler error: %v", err)
 
 	tracer, err := zipkin.NewTracer(reporter,
 		zipkin.WithLocalEndpoint(endpoint),
@@ -64,9 +60,7 @@ func NewTracing(spec *TracingSpec) *ZipkinTracing {
 		zipkingo.WithSharedSpans(spec.TracingSharedSpans),
 		zipkingo.WithTraceID128Bit(spec.TracingID128Bit),
 	)
-	if err != nil {
-		exitf("tracing init failed: %s", err.Error())
-	}
+	exitfIfErr(err, "tracing init failed: %v", err)
 	zipkinTracing := &ZipkinTracing{
 		spec:     spec,
 		endpoint: endpoint,
@@ -76,9 +70,29 @@ func NewTracing(spec *TracingSpec) *ZipkinTracing {
 	return zipkinTracing
 }
 
-func exitf(format string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, format+"\n", args...)
-	os.Exit(1)
+func newEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
+	host, port, err := net.SplitHostPort(hostPort)
+	if err != nil {
+		return nil, err
+	}
+	if host != "" {
+		return zipkin.NewEndpoint(serviceName, hostPort)
+	}
+
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil, err
+	}
+	for _, address := range addrs {
+		// check the address type and if it is not a loopback the display it
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				host = ipnet.IP.String()
+				break
+			}
+		}
+	}
+	return zipkin.NewEndpoint(serviceName, fmt.Sprintf("%s:%s", host, port))
 }
 
 func (t *ZipkinTracing) Close() error {

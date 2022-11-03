@@ -151,6 +151,7 @@ func (a *Agent) WrapUserClient(httpDoer plugins.HTTPDoer) plugins.HTTPDoer {
 	return httpDoer
 }
 
+// WrapHTTPRequest wraps the request with the parent conext from every enabled plugin.
 func (a *Agent) WrapHTTPRequest(parent context.Context, req *http.Request) *http.Request {
 	for _, plug := range a.plugins {
 		wrapper, ok := plug.(plugins.UserClientRequestWrapper)
