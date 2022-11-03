@@ -125,18 +125,27 @@ func (spec *Spec) BuildTracingSpec() *TracingSpec {
 	}
 }
 
-func LoadSpecFromYamlFile(filePath string) *Spec {
+func LoadSpecFromYamlFile(filePath string) (*Spec, error) {
 	buff, err := ioutil.ReadFile(filePath)
-	exitfIfErr(err, "read config file :%s failed: %v", filePath, err)
+	if err != nil {
+		return nil, fmt.Errorf("read config file :%s failed: %v", filePath, err)
+	}
 	var body map[string]interface{}
 	err = yaml.Unmarshal(buff, &body)
-	exitfIfErr(err, "unmarshal yaml file %s to map failed: %v",
-		filePath, err)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal yaml file %s to map failed: %v",
+			filePath, err)
+	}
 	bodyJson, err := json.Marshal(body)
-	exitfIfErr(err, "marshal yaml file %s to json failed: %v",
-		filePath, err)
+	if err != nil {
+		return nil, fmt.Errorf("marshal yaml file %s to json failed: %v",
+			filePath, err)
+	}
+
 	var spec Spec
 	err = json.Unmarshal(bodyJson, &spec)
-	exitfIfErr(err, "unmarshal %s to %T failed: %v", bodyJson, spec, err)
-	return spec.SetKind(Kind)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal %s to %T failed: %v", bodyJson, spec, err)
+	}
+	return spec.SetKind(Kind), nil
 }

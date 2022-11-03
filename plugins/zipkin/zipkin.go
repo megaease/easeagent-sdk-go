@@ -30,17 +30,24 @@ type (
 
 func New(spec plugins.Spec) (plugins.Plugin, error) {
 	if spec, ok := spec.(*Spec); ok {
-		zipkinPlugin := NewPlugin(spec.BuildTracingSpec())
+		zipkinPlugin, err := NewPlugin(spec.BuildTracingSpec())
+		if err != nil {
+			return nil, err
+		}
 		return zipkinPlugin, nil
 	}
 	return nil, fmt.Errorf("spec must be *zipkin.Spec")
 }
 
-func NewPlugin(spec *TracingSpec) *ZipkinPlugin {
+func NewPlugin(spec *TracingSpec) (*ZipkinPlugin, error) {
+	tracing, err := NewTracing(spec)
+	if err != nil {
+		return nil, err
+	}
 	return &ZipkinPlugin{
 		spec:    spec,
-		tracing: NewTracing(spec),
-	}
+		tracing: tracing,
+	}, nil
 }
 
 func (z *ZipkinPlugin) Tracer() *zipkin.Tracer {

@@ -3,6 +3,7 @@ package zipkin
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -30,17 +31,16 @@ type AuthTransport struct {
 	next     http.RoundTripper
 }
 
-func NewReporter(spec *ReporterSpec) reporter.Reporter {
-	var reporter reporter.Reporter
+func NewReporter(spec *ReporterSpec) (reporter.Reporter, error) {
 	if spec.SenderUrl == "" {
-		reporter = logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags))
-		defer func() {
-			_ = reporter.Close()
-		}()
-	} else {
-		reporter = zipkinHttpReporter.NewReporter(spec.SenderUrl, zipkinHttpReporter.Client(httpClient(spec)), zipkinHttpReporter.Serializer(SpanSerializer(spec.SpanSpec)))
+		return logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags)), nil
 	}
-	return reporter
+	httpClient, err := httpClient(spec)
+	if err != nil {
+		return nil, err
+	}
+	reporter := zipkinHttpReporter.NewReporter(spec.SenderUrl, zipkinHttpReporter.Client(httpClient), zipkinHttpReporter.Serializer(SpanSerializer(spec.SpanSpec)))
+	return reporter, nil
 }
 
 func basicAuthTransport(spec *ReporterSpec, next http.RoundTripper) http.RoundTripper {
@@ -54,15 +54,17 @@ func basicAuthTransport(spec *ReporterSpec, next http.RoundTripper) http.RoundTr
 	}
 }
 
-func httpClient(spec *ReporterSpec) *http.Client {
+func httpClient(spec *ReporterSpec) (*http.Client, error) {
 	transport := http.DefaultTransport
 	if spec.TlsEnable {
 		tlsConfig, err := newTLSConfig(spec.TlsCert, spec.TlsKey, spec.TlsCaCert)
-		exitfIfErr(err, "error create tls config: %v", err)
+		if err != nil {
+			return nil, fmt.Errorf("error create tls config: %v", err)
+		}
 		transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
 	transport = basicAuthTransport(spec, transport)
-	return &http.Client{Transport: transport}
+	return &http.Client{Transport: transport}, nil
 }
 
 func newTLSConfig(clientCert, clientKey, caCert string) (*tls.Config, error) {

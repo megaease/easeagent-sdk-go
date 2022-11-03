@@ -1,8 +1,6 @@
-package zipkin
+package tracing
 
 import (
-	"fmt"
-	"net"
 	"time"
 
 	zipkingo "github.com/openzipkin/zipkin-go"
@@ -11,6 +9,8 @@ import (
 	"github.com/openzipkin/zipkin-go/model"
 	"github.com/openzipkin/zipkin-go/reporter"
 )
+
+var DEFAULT_TRACING *ZipkinTracing
 
 type TracingSpec struct {
 	HostPort           string
@@ -31,20 +31,28 @@ type ZipkinTracing struct {
 	tracer   *zipkin.Tracer
 }
 
-func NewTracing(spec *TracingSpec) (*ZipkinTracing, error) {
-	endpoint, err := newEndpoint(spec.ServiceName, spec.HostPort)
+func DefaultTracing() *ZipkinTracing {
+	return DEFAULT_TRACING
+}
+
+func InitDefaultTracing(spec *TracingSpec) {
+	DEFAULT_TRACING = NewTracing(spec)
+}
+
+func CloseDefaultTracing() error {
+	return DEFAULT_TRACING.Close()
+}
+
+func NewTracing(spec *TracingSpec) *ZipkinTracing {
+	endpoint, err := zipkin.NewEndpoint(spec.ServiceName, spec.HostPort)
 	if err != nil {
-		return nil, fmt.Errorf("error creating zipkin endpoint: %v", err)
+		exitf("error creating zipkin endpoint: %s", err.Error())
 	}
 
-	reporter, err := NewReporter(spec.ReporterSpec)
-	if err != nil {
-		return nil, err
-	}
-
+	reporter := NewReporter(spec.ReporterSpec)
 	sampler, err := zipkingo.NewBoundarySampler(spec.TracingSampleRate, time.Now().Unix())
 	if err != nil {
-		return nil, fmt.Errorf("new sampler error: %v", err)
+		exitf("new sampler error: %s", err.Error())
 	}
 
 	tracer, err := zipkin.NewTracer(reporter,
@@ -55,41 +63,15 @@ func NewTracing(spec *TracingSpec) (*ZipkinTracing, error) {
 		zipkingo.WithTraceID128Bit(spec.TracingID128Bit),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("tracing init failed: %v", err)
+		exitf("tracing init failed: %s", err.Error())
 	}
-
 	zipkinTracing := &ZipkinTracing{
 		spec:     spec,
 		endpoint: endpoint,
 		reporter: reporter,
 		tracer:   tracer,
 	}
-	return zipkinTracing, nil
-}
-
-func newEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
-	host, port, err := net.SplitHostPort(hostPort)
-	if err != nil {
-		return nil, err
-	}
-	if host != "" {
-		return zipkin.NewEndpoint(serviceName, hostPort)
-	}
-
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return nil, err
-	}
-	for _, address := range addrs {
-		// check the address type and if it is not a loopback the display it
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				host = ipnet.IP.String()
-				break
-			}
-		}
-	}
-	return zipkin.NewEndpoint(serviceName, fmt.Sprintf("%s:%s", host, port))
+	return zipkinTracing
 }
 
 func (t *ZipkinTracing) Close() error {
