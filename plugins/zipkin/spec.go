@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
-	"path"
-	"path/filepath"
 
 	"github.com/megaease/easeagent-sdk-go/plugins"
 	"gopkg.in/yaml.v2"
@@ -35,11 +31,10 @@ type Spec struct {
 	ReporterAuthUser              string  `json:"reporter.output.server.auth.user"`
 	ReporterAuthPassword          string  `json:"reporter.output.server.auth.password"`
 	HostPort                      string
-	HomeDir                       string `json:"home-dir" long:"home-dir" description:"Path to the home directory."`
 }
 
 func NewSpec() *Spec {
-	o := &Spec{
+	return &Spec{
 		BaseSpec: plugins.BaseSpec{
 			KindField: Kind,
 			NameField: "demo.demo.easeagent-sdk-go-service",
@@ -59,13 +54,6 @@ func NewSpec() *Spec {
 		ReporterAuthPassword:          "",
 		HostPort:                      ":8080",
 	}
-	var err error
-	o.HomeDir, err = filepath.Abs(path.Dir(os.Args[0]))
-	if err != nil {
-		log.Fatalf("failed to identify the full home dir: %v", err)
-	}
-
-	return o
 }
 
 // DefaultSpec returns the default spec of EaseMesh.

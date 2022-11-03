@@ -78,7 +78,8 @@ func (z *ZipkinPlugin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
 			zipkinhttp.ClientTrace(z.spec.TracingEnable),
 		)
 		if err != nil {
-			log.Fatalf("unable to create client: %+v\n", err)
+			log.Printf("unable to create client: %+v\n", err)
+			return c
 		}
 		return &HTTPClientWrapper{
 			client: client,
