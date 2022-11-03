@@ -18,6 +18,7 @@ const (
 
 var easeagent = newAgent(hostPort)
 
+// new agent
 func newAgent(hostPort string) *agent.Agent {
 	// fileConfigPath := os.Getenv("MEGAEASE_SDK_CONFIG_FILE")
 	// if fileConfigPath == "" {
@@ -71,16 +72,13 @@ func otherFunc() http.HandlerFunc {
 
 func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// created span by server middleware
 		log.Printf("some_function called with method: %s\n", r.Method)
-
-		// retrieve span from context (created by server middleware)
-		// agent.Default().Tracer().
 
 		// doing some expensive calculations....
 		time.Sleep(25 * time.Millisecond)
 
 		log.Printf(url + "/other_function")
-
 		newRequest, err := http.NewRequest("GET", url+"/other_function", nil)
 		if err != nil {
 			log.Printf("unable to create client: %+v\n", err)
@@ -91,6 +89,7 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 		// ctx := zipkin.NewContext(req.Context(), span)
 		// newRequest = req.WithContext(ctx)
 
+		// set server span for parent
 		newRequest = easeagent.WrapHTTPRequest(r.Context(), newRequest)
 		res, err := client.Do(newRequest)
 		if err != nil {
@@ -105,9 +104,7 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 
 func main() {
 
-	// defer agent.CloseDefault()
-	//load config
-	// // initialize router
+	// initialize router
 	router := http.NewServeMux()
 	router.HandleFunc("/hello", hello)
 	router.HandleFunc("/headers", headers)

@@ -15,7 +15,7 @@ import (
 
 const (
 	// Kind is the kind of Zipkin plugin.
-	Kind = "ZipKin"
+	Kind = "Zipkin"
 )
 
 // Spec is the Zipkin spec.
