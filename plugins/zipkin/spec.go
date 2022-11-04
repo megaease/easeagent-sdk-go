@@ -77,37 +77,3 @@ func (spec Spec) Validate() error {
 
 	return nil
 }
-
-// func (spec Spec) BuildReporterSpec() *ReporterSpec {
-// 	reporterSpec := &ReporterSpec{
-// 		SpanSpec: &SpanSpec{
-// 			Service: spec.Name(),
-// 		},
-// 		TLSEnable:    spec.EnableTLS,
-// 		TLSKey:       spec.TLSKey,
-// 		TLSCert:      spec.TLSCert,
-// 		TLSCaCert:    spec.TLSCaCert,
-// 		AuthEnable:   spec.EnableBasicAuth,
-// 		AuthUser:     spec.Username,
-// 		AuthPassword: spec.Password,
-// 	}
-// 	if spec.OutputServerURL != "" {
-// 		reporterSpec.SenderURL = spec.OutputServerURL + spec.ReporterTracingSenderURL
-// 	} else {
-// 		reporterSpec.SenderURL = ""
-// 	}
-// 	return reporterSpec
-// }
-
-// func (spec *Spec) BuildTracingSpec() *TracingSpec {
-// 	return &TracingSpec{
-// 		HostPort:           spec.Hostport,
-// 		ServiceName:        spec.Name(),
-// 		TracingEnable:      spec.TracingEnable,
-// 		TracingSampleRate:  spec.SampleRate,
-// 		TracingSharedSpans: spec.SharedSpans,
-// 		TracingID128Bit:    spec.ID128Bit,
-// 		TracingTags:        make(map[string]string),
-// 		ReporterSpec:       spec.BuildReporterSpec(),
-// 	}
-// }
