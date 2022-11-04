@@ -42,7 +42,7 @@ func newReporter(spec Spec) (reporter.Reporter, error) {
 func newHTTPClient(spec Spec) (*http.Client, error) {
 	transport := http.DefaultTransport
 	if spec.EnableTLS {
-		tlsConfig, err := newTLSConfig(spec.TLSCert, spec.TLSKey, spec.TLSCaCert)
+		tlsConfig, err := newTLSConfig([]byte(spec.TLSCert), []byte(spec.TLSKey), []byte(spec.TLSCaCert))
 		if err != nil {
 			return nil, fmt.Errorf("error create tls config: %v", err)
 		}

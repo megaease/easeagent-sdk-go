@@ -19,15 +19,16 @@ type (
 		OutputServerURL string `json:"reporter.output.server"`
 
 		EnableTLS bool   `json:"reporter.output.server.tls.enable"`
-		TLSKey    []byte `json:"reporter.output.server.tls.key"`
-		TLSCert   []byte `json:"reporter.output.server.tls.cert"`
-		TLSCaCert []byte `json:"reporter.output.server.tls.ca_cert"`
+		TLSKey    string `json:"reporter.output.server.tls.key"`
+		TLSCert   string `json:"reporter.output.server.tls.cert"`
+		TLSCaCert string `json:"reporter.output.server.tls.ca_cert"`
 
 		EnableBasicAuth bool   `json:"reporter.output.server.auth.enable"`
 		Username        string `json:"reporter.output.server.auth.username"`
 		Password        string `json:"reporter.output.server.auth.password"`
 
 		ServiceName string            `json:"service_name"`
+		TracingType string            `json:"tracing_type"`
 		Hostport    string            `json:"hostport"`
 		Tags        map[string]string `json:"tags"`
 
@@ -42,7 +43,7 @@ func DefaultSpec() plugins.Spec {
 	return Spec{
 		BaseSpec: plugins.BaseSpec{
 			KindField: Kind,
-			NameField: "demo.demo.easeagent-sdk-go-service",
+			NameField: "default-name",
 		},
 		OutputServerURL: "https://127.0.0.1:8080/report",
 
@@ -51,6 +52,7 @@ func DefaultSpec() plugins.Spec {
 		EnableBasicAuth: false,
 
 		ServiceName: "default-service",
+		TracingType: "log-tracing",
 		Hostport:    "127.0.0.1:80",
 
 		SampleRate:  1,

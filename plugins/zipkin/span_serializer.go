@@ -9,14 +9,15 @@ import (
 
 type spanJSONSerializer struct {
 	serviceName string
+	tracingType string
 }
 
 func (s spanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) {
 	newSpans := make([]*Span, 0)
 	for i := 0; i < len(spans); i++ {
 		span := &Span{
-			SpanModel: model.SpanModel(*spans[i]),
-			Type:      "log-tracing",
+			SpanModel: SpanModel(*spans[i]),
+			Type:      s.tracingType,
 			Service:   s.serviceName,
 		}
 		newSpans = append(newSpans, span)
@@ -33,5 +34,6 @@ func (s spanJSONSerializer) ContentType() string {
 func newSpanSerializer(spec Spec) reporter.SpanSerializer {
 	return &spanJSONSerializer{
 		serviceName: spec.ServiceName,
+		tracingType: spec.TracingType,
 	}
 }

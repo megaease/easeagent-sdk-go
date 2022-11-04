@@ -9,9 +9,12 @@ import (
 )
 
 type (
+	// for override MarshalJSON
+	SpanModel model.SpanModel
+
 	// Span represents a Zipkin span.
 	Span struct {
-		model.SpanModel
+		SpanModel
 		Type    string `json:"type,omitempty"`
 		Service string `json:"service,omitempty"`
 	}

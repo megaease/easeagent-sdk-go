@@ -13,8 +13,13 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492 // indirect
 	github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/testify v1.8.1 // indirect
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
 	google.golang.org/grpc v1.50.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

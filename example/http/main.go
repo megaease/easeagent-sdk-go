@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +12,7 @@ import (
 	"github.com/megaease/easeagent-sdk-go/agent"
 	"github.com/megaease/easeagent-sdk-go/plugins"
 	"github.com/megaease/easeagent-sdk-go/plugins/zipkin"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -24,7 +27,8 @@ func newAgent(hostport string) *agent.Agent {
 	// if fileConfigPath == "" {
 	// 	fileConfigPath = "/megaease/sdk/agent.yml"
 	// }
-	// zipkinSpec, err := zipkin.LoadSpecFromYamlFile(fileConfigPath)
+	// spec, err := LoadSpecFromYamlFile(fileConfigPath)
+	// zipkinSpec := *spec
 	// exitfIfErr(err, "new zipkin spec fail: %v", err)
 	zipkinSpec := zipkin.DefaultSpec().(zipkin.Spec)
 	zipkinSpec.OutputServerURL = "" // report to log when output server is ""
@@ -46,16 +50,32 @@ func exitfIfErr(err error, format string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello\n")
-}
-
-func headers(w http.ResponseWriter, req *http.Request) {
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
+func LoadSpecFromYamlFile(filePath string) (*zipkin.Spec, error) {
+	buff, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("read config file :%s failed: %v", filePath, err)
 	}
+	fmt.Println(string(buff))
+	var body map[string]interface{}
+	err = yaml.Unmarshal(buff, &body)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal yaml file %s to map failed: %v",
+			filePath, err)
+	}
+
+	bodyJson, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal yaml file %s to json failed: %v",
+			filePath, err)
+	}
+	var spec zipkin.Spec
+	err = json.Unmarshal(bodyJson, &spec)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal %s to %T failed: %v", bodyJson, spec, err)
+	}
+	spec.KindField = zipkin.Kind
+	spec.NameField = spec.ServiceName
+	return &spec, nil
 }
 
 func otherFunc() http.HandlerFunc {
@@ -104,8 +124,6 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 func main() {
 	// initialize router
 	router := http.NewServeMux()
-	router.HandleFunc("/hello", hello)
-	router.HandleFunc("/headers", headers)
 	router.HandleFunc("/some_function", someFunc("http://"+hostPort, easeagent.WrapUserClient(&http.Client{})))
 	router.HandleFunc("/other_function", otherFunc())
 	http.ListenAndServe(hostPort, easeagent.WrapUserHandler(router))
