@@ -7,21 +7,17 @@ import (
 	"github.com/openzipkin/zipkin-go/reporter"
 )
 
-type SpanSpec struct {
-	Service string
+type spanJSONSerializer struct {
+	serviceName string
 }
 
-type SpanJSONSerializer struct {
-	SpanSpec *SpanSpec
-}
-
-func (s SpanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) {
+func (s spanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) {
 	newSpans := make([]*Span, 0)
 	for i := 0; i < len(spans); i++ {
 		span := &Span{
-			ModelSpanModel: ModelSpanModel(*spans[i]),
-			Type:           "log-tracing",
-			Service:        s.SpanSpec.Service,
+			SpanModel: model.SpanModel(*spans[i]),
+			Type:      "log-tracing",
+			Service:   s.serviceName,
 		}
 		newSpans = append(newSpans, span)
 	}
@@ -30,12 +26,12 @@ func (s SpanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) 
 }
 
 // ContentType returns the ContentType needed for this encoding.
-func (SpanJSONSerializer) ContentType() string {
+func (s spanJSONSerializer) ContentType() string {
 	return "application/json"
 }
 
-func SpanSerializer(spanSpec *SpanSpec) reporter.SpanSerializer {
-	return &SpanJSONSerializer{
-		SpanSpec: spanSpec,
+func newSpanSerializer(spec Spec) reporter.SpanSerializer {
+	return &spanJSONSerializer{
+		serviceName: spec.ServiceName,
 	}
 }

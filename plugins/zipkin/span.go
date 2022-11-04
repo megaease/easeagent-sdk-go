@@ -8,13 +8,14 @@ import (
 	"github.com/openzipkin/zipkin-go/model"
 )
 
-type ModelSpanModel model.SpanModel
-
-type Span struct {
-	ModelSpanModel
-	Type    string `json:"type,omitempty"`
-	Service string `json:"service,omitempty"`
-}
+type (
+	// Span represents a Zipkin span.
+	Span struct {
+		model.SpanModel
+		Type    string `json:"type,omitempty"`
+		Service string `json:"service,omitempty"`
+	}
+)
 
 // MarshalJSON exports our Model into the correct format for the Zipkin V2 API.
 func (s Span) MarshalJSON() ([]byte, error) {

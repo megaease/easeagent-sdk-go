@@ -19,16 +19,16 @@ const (
 var easeagent = newAgent(hostPort)
 
 // new agent
-func newAgent(hostPort string) *agent.Agent {
+func newAgent(hostport string) *agent.Agent {
 	// fileConfigPath := os.Getenv("MEGAEASE_SDK_CONFIG_FILE")
 	// if fileConfigPath == "" {
 	// 	fileConfigPath = "/megaease/sdk/agent.yml"
 	// }
 	// zipkinSpec, err := zipkin.LoadSpecFromYamlFile(fileConfigPath)
 	// exitfIfErr(err, "new zipkin spec fail: %v", err)
-	zipkinSpec := zipkin.NewSpec()
-	zipkinSpec.ReporterOutputServer = "" //report to log when output server is ""
-	zipkinSpec.HostPort = hostPort
+	zipkinSpec := zipkin.DefaultSpec().(zipkin.Spec)
+	zipkinSpec.OutputServerURL = "" // report to log when output server is ""
+	zipkinSpec.Hostport = hostport
 	agent, err := agent.New(&agent.Config{
 		Plugins: []plugins.Spec{
 			zipkinSpec,
@@ -47,7 +47,6 @@ func exitfIfErr(err error, format string, args ...interface{}) {
 }
 
 func hello(w http.ResponseWriter, req *http.Request) {
-
 	fmt.Fprintf(w, "hello\n")
 }
 
@@ -103,7 +102,6 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 }
 
 func main() {
-
 	// initialize router
 	router := http.NewServeMux()
 	router.HandleFunc("/hello", hello)

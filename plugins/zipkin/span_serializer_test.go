@@ -9,7 +9,7 @@ import (
 )
 
 func TestSerialize(t *testing.T) {
-	serializer := &SpanJSONSerializer{}
+	serializer := &spanJSONSerializer{}
 	// serializer := reporter.JSONSerializer{}
 	spans := make([]*model.SpanModel, 1)
 	spans[0] = &model.SpanModel{

@@ -13,79 +13,76 @@ import (
 	logreporter "github.com/openzipkin/zipkin-go/reporter/log"
 )
 
-type ReporterSpec struct {
-	SpanSpec     *SpanSpec
-	SenderUrl    string
-	TlsEnable    bool
-	TlsKey       string
-	TlsCert      string
-	TlsCaCert    string
-	AuthEnable   bool
-	AuthUser     string
-	AuthPassword string
-}
+type (
+	// AuthTransport is a http.RoundTripper that adds basic auth to requests.
+	AuthTransport struct {
+		username string
+		password string
 
-type AuthTransport struct {
-	user     string
-	password string
-	next     http.RoundTripper
-}
+		next http.RoundTripper
+	}
+)
 
-func NewReporter(spec *ReporterSpec) (reporter.Reporter, error) {
-	if spec.SenderUrl == "" {
+func newReporter(spec Spec) (reporter.Reporter, error) {
+	if spec.OutputServerURL == "" {
 		return logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags)), nil
 	}
-	httpClient, err := httpClient(spec)
+
+	httpClient, err := newHTTPClient(spec)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new http client failed: %v", err)
 	}
-	reporter := zipkinHttpReporter.NewReporter(spec.SenderUrl, zipkinHttpReporter.Client(httpClient), zipkinHttpReporter.Serializer(SpanSerializer(spec.SpanSpec)))
+
+	reporter := zipkinHttpReporter.NewReporter(spec.OutputServerURL,
+		zipkinHttpReporter.Client(httpClient),
+		zipkinHttpReporter.Serializer(newSpanSerializer(spec)))
 	return reporter, nil
 }
 
-func basicAuthTransport(spec *ReporterSpec, next http.RoundTripper) http.RoundTripper {
-	if !spec.AuthEnable {
-		return next
-	}
-	return &AuthTransport{
-		user:     spec.AuthUser,
-		password: spec.AuthPassword,
-		next:     next,
-	}
-}
-
-func httpClient(spec *ReporterSpec) (*http.Client, error) {
+func newHTTPClient(spec Spec) (*http.Client, error) {
 	transport := http.DefaultTransport
-	if spec.TlsEnable {
-		tlsConfig, err := newTLSConfig(spec.TlsCert, spec.TlsKey, spec.TlsCaCert)
+	if spec.EnableTLS {
+		tlsConfig, err := newTLSConfig(spec.TLSCert, spec.TLSKey, spec.TLSCaCert)
 		if err != nil {
 			return nil, fmt.Errorf("error create tls config: %v", err)
 		}
 		transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
-	transport = basicAuthTransport(spec, transport)
+	transport = newAuthTransport(spec, transport)
 	return &http.Client{Transport: transport}, nil
 }
 
-func newTLSConfig(clientCert, clientKey, caCert string) (*tls.Config, error) {
+func newAuthTransport(spec Spec, next http.RoundTripper) http.RoundTripper {
+	if !spec.EnableBasicAuth {
+		return next
+	}
+
+	return &AuthTransport{
+		username: spec.Username,
+		password: spec.Password,
+		next:     next,
+	}
+}
+
+func newTLSConfig(clientCert, clientKey, caCert []byte) (*tls.Config, error) {
 	tlsConfig := tls.Config{InsecureSkipVerify: true}
 
-	// Load client cert
-	cert, err := tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
+	cert, err := tls.X509KeyPair(clientCert, clientKey)
 	if err != nil {
 		return &tlsConfig, err
 	}
+
 	tlsConfig.Certificates = []tls.Certificate{cert}
 	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM([]byte(caCert))
+	caCertPool.AppendCertsFromPEM(caCert)
 	tlsConfig.RootCAs = caCertPool
 
 	tlsConfig.BuildNameToCertificate()
 	return &tlsConfig, err
-
 }
 
+// RoundTrip adds basic auth to the request.
 func (a *AuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.SetBasicAuth(a.user, a.password)
+	req.SetBasicAuth(a.username, a.password)
 	return a.next.RoundTrip(req)
 }

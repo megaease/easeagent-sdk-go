@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/megaease/easeagent-sdk-go/plugins"
 	"github.com/openzipkin/zipkin-go"
+	zipkingo "github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
+	"github.com/openzipkin/zipkin-go/model"
+	"github.com/openzipkin/zipkin-go/reporter"
 )
 
 func init() {
@@ -18,64 +23,105 @@ func init() {
 		SystemPlugin: false,
 		NewInstance:  New,
 	}
+
 	plugins.Register(cons)
 }
 
 type (
-	ZipkinPlugin struct {
-		spec    *TracingSpec
-		tracing *ZipkinTracing
+	// Zipkin is the Zipkin dedicated plugin.
+	Zipkin struct {
+		spec Spec
+
+		reporter reporter.Reporter
+		tracer   *zipkin.Tracer
 	}
 )
 
-func New(spec plugins.Spec) (plugins.Plugin, error) {
-	if spec, ok := spec.(*Spec); ok {
-		zipkinPlugin, err := NewPlugin(spec.BuildTracingSpec())
-		if err != nil {
-			return nil, err
-		}
-		return zipkinPlugin, nil
+// New creates a new Zipkin plugin.
+func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
+	spec := pluginSpec.(Spec)
+
+	endpoint, err := newEndpoint(spec.ServiceName, spec.Hostport)
+	if err != nil {
+		return nil, fmt.Errorf("new endpoint failed: %v", err)
 	}
-	return nil, fmt.Errorf("spec must be *zipkin.Spec")
+
+	reporter, err := newReporter(spec)
+	if err != nil {
+		return nil, fmt.Errorf("new reporter failed: %v", err)
+	}
+
+	sampler, err := zipkingo.NewBoundarySampler(spec.SampleRate, time.Now().Unix())
+	if err != nil {
+		return nil, fmt.Errorf("new sampler failed: %v", err)
+	}
+
+	tracer, err := zipkin.NewTracer(reporter,
+		zipkin.WithLocalEndpoint(endpoint),
+		zipkin.WithTags(spec.Tags),
+		zipkingo.WithSampler(sampler),
+		zipkingo.WithSharedSpans(spec.SharedSpans),
+		zipkingo.WithTraceID128Bit(spec.ID128Bit),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("new tracer failed: %v", err)
+	}
+
+	z := &Zipkin{
+		spec:     spec,
+		tracer:   tracer,
+		reporter: reporter,
+	}
+
+	return z, nil
 }
 
-func NewPlugin(spec *TracingSpec) (*ZipkinPlugin, error) {
-	tracing, err := NewTracing(spec)
+func newEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
+	host, port, err := net.SplitHostPort(hostPort)
 	if err != nil {
 		return nil, err
 	}
-	return &ZipkinPlugin{
-		spec:    spec,
-		tracing: tracing,
-	}, nil
+	if host != "" {
+		return zipkin.NewEndpoint(serviceName, hostPort)
+	}
+
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil, err
+	}
+	for _, address := range addrs {
+		// check the address type and if it is not a loopback the display it
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				host = ipnet.IP.String()
+				break
+			}
+		}
+	}
+	return zipkin.NewEndpoint(serviceName, fmt.Sprintf("%s:%s", host, port))
 }
 
-func (z *ZipkinPlugin) Tracer() *zipkin.Tracer {
-	return z.tracing.tracer
+// Close closes the plugin.
+func (z *Zipkin) Close() error {
+	return z.reporter.Close()
 }
 
-func (z *ZipkinPlugin) Close() error {
-	return z.tracing.Close()
-}
-
-func (z *ZipkinPlugin) Tracing() *ZipkinTracing {
-	return z.tracing
-}
-
-func (z *ZipkinPlugin) WrapUserHandlerFunc(handlerFunc http.HandlerFunc) http.HandlerFunc {
-	hander := zipkinhttp.NewServerMiddleware(
-		z.tracing.tracer, zipkinhttp.TagResponseSize(true),
+// WrapUserHandlerFunc wraps the user's http handler.
+func (z *Zipkin) WrapUserHandlerFunc(handlerFunc http.HandlerFunc) http.HandlerFunc {
+	handler := zipkinhttp.NewServerMiddleware(
+		z.tracer, zipkinhttp.TagResponseSize(true),
 	)
-	return hander(&HTTPHandlerWrapper{
+	return handler(&HTTPHandlerWrapper{
 		handlerFunc: handlerFunc,
 	}).ServeHTTP
 }
 
-func (z *ZipkinPlugin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
+// WrapUserClient wraps the http client.
+func (z *Zipkin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
 	if original, ok := c.(*http.Client); ok {
-		client, err := zipkinhttp.NewClient(z.tracing.tracer,
+		client, err := zipkinhttp.NewClient(z.tracer,
 			zipkinhttp.WithClient(original),
-			zipkinhttp.ClientTrace(z.spec.TracingEnable),
+			zipkinhttp.ClientTrace(true),
 		)
 		if err != nil {
 			log.Printf("unable to create client: %+v\n", err)
@@ -89,7 +135,8 @@ func (z *ZipkinPlugin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
 	return c
 }
 
-func (z *ZipkinPlugin) WrapUserClientRequest(current context.Context, req *http.Request) *http.Request {
+// WrapUserClientRequest wraps the user's http request.
+func (z *Zipkin) WrapUserClientRequest(current context.Context, req *http.Request) *http.Request {
 	span := zipkin.SpanFromContext(current)
 	ctx := zipkin.NewContext(req.Context(), span)
 	return req.WithContext(ctx)

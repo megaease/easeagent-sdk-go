@@ -17,13 +17,18 @@ const (
 	// Kind is the kind of EaseMesh plugin.
 	Kind = "EaseMesh"
 
-	agentType    = "GoSDK"
-	agentVersion = "v0.1.0"
+	defaultAgentType    = "GoSDK"
+	defaultAgentVersion = "v0.1.0"
 )
 
 // DefaultSpec returns the default spec of EaseMesh.
 func DefaultSpec() plugins.Spec {
-	return Spec{}
+	return Spec{
+		BaseSpec: plugins.BaseSpec{
+			KindField: Kind,
+			NameField: "easemesh",
+		},
+	}
 }
 
 func init() {
@@ -49,6 +54,8 @@ type (
 	// Spec is the EaseMesh spec.
 	Spec struct {
 		plugins.BaseSpec `json:",inline"`
+
+		AgentType string `json:"agentType"`
 	}
 
 	// AgentInfo stores agent information.
@@ -69,10 +76,17 @@ func (s Spec) Validate() error {
 }
 
 // New creates a EaseMesh plugin.
-func New(spec plugins.Spec) (plugins.Plugin, error) {
+func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
+	spec := pluginSpec.(Spec)
+
+	agentType := defaultAgentType
+	if spec.AgentType != "" {
+		agentType = spec.AgentType
+	}
+
 	agentInfo := &AgentInfo{
 		Type:    agentType,
-		Version: agentVersion,
+		Version: defaultAgentVersion,
 	}
 
 	buff, err := json.Marshal(agentInfo)
@@ -82,7 +96,7 @@ func New(spec plugins.Spec) (plugins.Plugin, error) {
 
 	mesh := &EaseMesh{
 		agentInfo: buff,
-		spec:      spec.(Spec),
+		spec:      pluginSpec.(Spec),
 	}
 
 	mesh.headers.Store([]string{})
