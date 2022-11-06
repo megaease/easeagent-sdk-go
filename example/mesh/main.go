@@ -131,7 +131,7 @@ var (
 
 		SampleRate:  1,
 		SharedSpans: true,
-		ID128Bit:    true,
+		ID128Bit:    false,
 	}
 )
 

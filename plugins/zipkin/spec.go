@@ -57,7 +57,7 @@ func DefaultSpec() plugins.Spec {
 
 		SampleRate:  1,
 		SharedSpans: true,
-		ID128Bit:    true,
+		ID128Bit:    false,
 		Username:    "",
 		Password:    "",
 	}
