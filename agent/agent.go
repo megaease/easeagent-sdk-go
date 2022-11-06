@@ -93,6 +93,13 @@ func New(config *Config) (*Agent, error) {
 	}
 	agent.plugins = plugs
 
+	go func() {
+		err := http.ListenAndServe(config.Address, agent)
+		if err != nil && err != http.ErrServerClosed {
+			log.Printf("easemesh agent listen %s failed: %v", agentAddr, err)
+		}
+	}()
+
 	return agent, nil
 }
 
@@ -162,27 +169,4 @@ func (a *Agent) WrapHTTPRequest(parent context.Context, req *http.Request) *http
 	}
 
 	return req
-}
-
-// ServeDefaultAgent just runs global default agent in HTTP server,
-// please notice it prints logs if the server failed listening.
-// The caller must call it to activate default agent.
-func ServeDefaultAgent() {
-	go func() {
-		err := http.ListenAndServe(agentAddr, DefaultAgent)
-		if err != nil && err != http.ErrServerClosed {
-			log.Printf("easemesh agent listen %s failed: %v", agentAddr, err)
-		}
-	}()
-}
-
-// ServeAgent just runs the given agent in HTTP server,
-// please notice it prints logs if the server failed listening.
-func ServeAgent(agent *Agent) {
-	go func() {
-		err := http.ListenAndServe(agentAddr, agent)
-		if err != nil && err != http.ErrServerClosed {
-			log.Printf("easemesh agent listen %s failed: %v", agentAddr, err)
-		}
-	}()
 }

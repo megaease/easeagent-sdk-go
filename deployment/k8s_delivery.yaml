@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    mesh.megaease.com/service-name: demo.takeoutapp.delivery-mesh
+  name: delivery-mesh
+  namespace: takeoutapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery-mesh
+  template:
+    metadata:
+      labels:
+        app: delivery-mesh
+    spec:
+      containers:
+        - name: delivery-mesh
+          image: megaease/meshdemo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: SERVICE_NAME
+              value: demo.takeoutapp.delivery-mesh
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery-mesh
+  namespace: takeoutapp
+spec:
+  selector:
+    app: delivery-mesh
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

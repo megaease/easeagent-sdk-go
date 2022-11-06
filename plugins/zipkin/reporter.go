@@ -44,7 +44,7 @@ func newHTTPClient(spec Spec) (*http.Client, error) {
 	if spec.EnableTLS {
 		tlsConfig, err := newTLSConfig([]byte(spec.TLSCert), []byte(spec.TLSKey), []byte(spec.TLSCaCert))
 		if err != nil {
-			return nil, fmt.Errorf("error create tls config: %v", err)
+			return nil, fmt.Errorf("create tls config failed: %v", err)
 		}
 		transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
@@ -64,21 +64,25 @@ func newAuthTransport(spec Spec, next http.RoundTripper) http.RoundTripper {
 	}
 }
 
-func newTLSConfig(clientCert, clientKey, caCert []byte) (*tls.Config, error) {
-	tlsConfig := tls.Config{InsecureSkipVerify: true}
-
-	cert, err := tls.X509KeyPair(clientCert, clientKey)
+func newTLSConfig(certPem, keyPem, caCertPem []byte) (*tls.Config, error) {
+	cert, err := tls.X509KeyPair(certPem, keyPem)
 	if err != nil {
-		return &tlsConfig, err
+		return nil, fmt.Errorf("load client cert failed: %v", err)
 	}
 
-	tlsConfig.Certificates = []tls.Certificate{cert}
 	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	tlsConfig.RootCAs = caCertPool
+	ok := caCertPool.AppendCertsFromPEM(caCertPem)
+	if !ok {
+		return nil, fmt.Errorf("load ca cert failed")
+	}
 
-	tlsConfig.BuildNameToCertificate()
-	return &tlsConfig, err
+	tlsConfig := tls.Config{
+		InsecureSkipVerify: true,
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            caCertPool,
+	}
+
+	return &tlsConfig, nil
 }
 
 // RoundTrip adds basic auth to the request.

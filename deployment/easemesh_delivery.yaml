@@ -1,0 +1,17 @@
+apiVersion: mesh.megaease.com/v2alpha1
+kind: Service
+metadata:
+  name: demo.takeoutapp.delivery-mesh
+spec:
+  registerTenant: takeoutapp
+  sidecar:
+    discoverytype: consul
+    address: 127.0.0.1
+    ingressport: 13001
+    ingressprotocol: http
+    egressport: 13002
+    egressprotocol: http
+  resilience: null
+  loadBalance:
+    policy: random
+    headerhashkey: ""

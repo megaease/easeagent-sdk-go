@@ -1,0 +1,32 @@
+apiVersion: mesh.megaease.com/v2alpha1
+kind: Service
+metadata:
+  name: demo.takeoutapp.order-mesh
+spec:
+  registerTenant: takeoutapp
+  sidecar:
+    discoverytype: consul
+    address: 127.0.0.1
+    ingressport: 13001
+    ingressprotocol: http
+    egressport: 13002
+    egressprotocol: http
+    #resilience:
+    #  failureCodes: [500, 501, 502, 503]
+    #  rateLimiter: name: rate-limiter
+    #    kind: RateLimiter
+    #    policies:
+    #    - name: policy-example
+    #      timeoutDuration: 100ms
+    #      limitRefreshPeriod: 10ms
+    #      limitForPeriod: 50
+    #    defaultPolicyRef: policy-example
+    #    urls:
+    #    - methods: [GET, POST, PUT, DELETE]
+    #      url:
+    #        exact: /admin
+    #        regex: ^/pets/\d+$
+    #      policyRef: policy-example
+  loadBalance:
+    policy: headerHash
+    headerHashkey: "Content-Type"

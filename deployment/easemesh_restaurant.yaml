@@ -1,0 +1,52 @@
+apiVersion: mesh.megaease.com/v2alpha1
+kind: Service
+metadata:
+  name: demo.takeoutapp.restaurant-mesh
+spec:
+  registerTenant: takeoutapp
+  sidecar:
+    discoveryType: consul
+    address: "127.0.0.1"
+    ingressPort: 13001
+    ingressProtocol: http
+    egressPort: 13002
+    egressProtocol: http
+  #resilience:
+  #  failureCodes: [501, 502, 504]
+  #  timeLimiter:
+  #    timeout: 100ms
+  #  circuitBreaker:
+  #    slidingWindowType: COUNT_BASED
+  #    failureRateThreshold: 50
+  #    slidingWindowSize: 100
+  #    failureRateThreshold: 50
+  #    slowCallRateThreshold: 2
+  #  retry:
+  #    maxAttempts: 3
+  #    waitDuration: 500ms
+  #    backOffPolicy: random
+  #  rateLimiter:
+  #    policies:
+  #    - name: policy-example
+  #      timeoutDuration: 100ms
+  #      limitRefreshPeriod: 10ms
+  #      limitForPeriod: 50
+  #    defaultPolicyRef: policy-example
+  #    urls:
+  #    - methods: [GET, POST, PUT, DELETE]
+  #      url:
+  #        exact: /admin
+  #        regex: ^/pets/\d+$
+  #      policyRef: policy-example
+  loadBalance:
+    policy: random
+  observability:
+    outputServer:
+      enabled: false
+      bootstrapServer: "" # kafka-0.kafka-hs.default:9093,kafka-1.kafka-hs.default:9093,kafka-2.kafka-hs.default:9093
+      timeout: 10000
+    tracings:
+      enabled: false
+    metrics:
+      enabled: false
+    easemesh:

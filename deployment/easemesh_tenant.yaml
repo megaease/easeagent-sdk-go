@@ -1,0 +1,6 @@
+apiVersion: mesh.megaease.com/v2alpha1
+kind: Tenant
+metadata:
+  name: takeoutapp
+spec:
+  description: Takeout App Tenant
