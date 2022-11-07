@@ -11,38 +11,6 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-const (
-	// DefualtAgentPort is the default listeaning port for agent.
-	// https://github.com/megaease/blob/main/docs/sidecar-protocol.md#easemesh-traffic-hosting
-	DefualtAgentPort = 9900
-
-	// DefaultAgentType is the default global agent type.
-	DefaultAgentType = "GoSDK"
-
-	// AgentVersion is the current version of Agent.
-	AgentVersion = "v0.1.0"
-)
-
-var (
-	agentAddr = fmt.Sprintf(":%d", DefualtAgentPort)
-
-	// DefaultAgentConfig is the global default agent.
-	DefaultAgentConfig = &Config{
-		Address: agentAddr,
-	}
-
-	// DefaultAgent is the default global agent.
-	DefaultAgent *Agent
-)
-
-func init() {
-	agent, err := New(DefaultAgentConfig)
-	if err != nil {
-		panic(err)
-	}
-	DefaultAgent = agent
-}
-
 type (
 	// Agent is the agent entry.
 	Agent struct {
@@ -96,7 +64,7 @@ func New(config *Config) (*Agent, error) {
 	go func() {
 		err := http.ListenAndServe(config.Address, agent)
 		if err != nil && err != http.ErrServerClosed {
-			log.Printf("easemesh agent listen %s failed: %v", agentAddr, err)
+			log.Printf("easemesh agent listen %s failed: %v", config.Address, err)
 		}
 	}()
 

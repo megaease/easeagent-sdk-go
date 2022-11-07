@@ -156,13 +156,7 @@ func (mesh *EaseMesh) handleConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func (mesh *EaseMesh) handleAgentInfo(w http.ResponseWriter, r *http.Request) {
-	data, err := json.Marshal(mesh.agentInfo)
-	if err != nil {
-		log.Printf("marshal agent info failed: %v", err)
-		w.WriteHeader(500)
-	}
-
-	w.Write(data)
+	w.Write(mesh.agentInfo)
 }
 
 // Close closes the EaseMesh plugin.
