@@ -123,8 +123,6 @@ var (
 		EnableTLS: true,
 
 		EnableBasicAuth: false,
-		Username:        "b693b759b320444092edb3cec33b352c",
-		Password:        "1e5dd0663181409bbf96d772c0606b1a",
 
 		TracingType: "log-tracing",
 		Hostport:    ":80",
