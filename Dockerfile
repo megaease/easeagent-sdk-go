@@ -15,9 +15,7 @@ WORKDIR /opt/meshdemo
 
 COPY entrypoint.sh /
 COPY --from=builder /opt/meshdemo/bin/ /opt/meshdemo/bin/
-COPY --from=builder /opt/meshdemo/tls_ca_cert.pem /opt/meshdemo/
-COPY --from=builder /opt/meshdemo/tls_cert.pem /opt/meshdemo/
-COPY --from=builder /opt/meshdemo/tls_key.key /opt/meshdemo/
+COPY --from=builder /opt/meshdemo/tls* /opt/meshdemo/
 
 RUN apk --no-cache add tini tzdata && \
     chmod +x /entrypoint.sh /opt/meshdemo/bin/*

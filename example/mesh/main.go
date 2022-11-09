@@ -27,6 +27,8 @@ var (
 	podServicePort = 80
 	podEgressPort  = 13002
 
+	zipKinURL = os.Getenv("ZIPKIN_URL")
+
 	// format: zone.domain.service
 	fullServiceName = os.Getenv("SERVICE_NAME")
 
@@ -118,8 +120,6 @@ var (
 			KindField: zipkinplugin.Kind,
 		},
 
-		OutputServerURL: "https://monitor.megaease.cn:32430/report/application-tracing-log",
-
 		EnableTLS: true,
 
 		EnableBasicAuth: false,
@@ -132,6 +132,54 @@ var (
 		ID128Bit:    false,
 	}
 )
+
+func setZipkinTLS() {
+	const (
+		// NOTE: Just show the available endpoints.
+		cnURL         = "https://monitor.megaease.cn:32430/report/application-tracing-log"
+		cnInternalURL = "https://172.20.1.116:32330/report/application-tracing-log"
+		comURL        = "https://monitor.megaease.com:32430/report/application-tracing-log"
+	)
+
+	log.Printf("zipkin url: %s", zipKinURL)
+
+	if zipKinURL == "" {
+		return
+	}
+
+	zipkinSpec.OutputServerURL = zipKinURL
+
+	var certFile, keyFile, caCertFile string
+	if strings.Contains(zipKinURL, ".com") {
+		certFile = "./tls_cert.com.pem"
+		keyFile = "./tls_key.com.key"
+		caCertFile = "./tls_ca_cert.com.pem"
+	} else {
+		certFile = "./tls_cert.cn.pem"
+		keyFile = "./tls_key.cn.key"
+		caCertFile = "./tls_ca_cert.cn.pem"
+	}
+
+	log.Printf("cert file: %s keyfile: %s caCertFile: %s", certFile, keyFile, caCertFile)
+
+	certBuff, err := ioutil.ReadFile(certFile)
+	if err != nil {
+		exitf("read %s failed: %v", certFile, err)
+	}
+	zipkinSpec.TLSCert = string(certBuff)
+
+	keyBuff, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		exitf("read %s failed: %v", keyFile, err)
+	}
+	zipkinSpec.TLSKey = string(keyBuff)
+
+	caCert, err := ioutil.ReadFile(caCertFile)
+	if err != nil {
+		exitf("read %s failed: %v", caCertFile, err)
+	}
+	zipkinSpec.TLSCaCert = string(caCert)
+}
 
 func initServiceName() {
 	names := strings.Split(fullServiceName, ".")
@@ -155,6 +203,7 @@ func prefligt() {
 	log.Printf("internal service name: %s", internalServiceName)
 
 	zipkinSpec.ServiceName = fullServiceName
+	setZipkinTLS()
 
 	if fullServiceName == "" {
 		exitf("empty serviceName")
@@ -170,24 +219,6 @@ func prefligt() {
 		exitf("unsupport service name: %s", internalServiceName)
 	}
 
-	certBuff, err := ioutil.ReadFile("./tls_cert.pem")
-	if err != nil {
-		exitf("read tls_cert.pem failed: %v", err)
-	}
-	zipkinSpec.TLSCert = string(certBuff)
-
-	keyBuff, err := ioutil.ReadFile("./tls_key.key")
-	if err != nil {
-		exitf("read tls_key.pem failed: %v", err)
-	}
-	zipkinSpec.TLSKey = string(keyBuff)
-
-	caCert, err := ioutil.ReadFile("./tls_ca_cert.pem")
-	if err != nil {
-		exitf("read tls_ca_cert.pem failed: %v", err)
-	}
-	zipkinSpec.TLSCaCert = string(caCert)
-
 	agentConfig := &agent.Config{
 		Address: ":9900",
 		Plugins: []plugins.Spec{
@@ -202,6 +233,7 @@ func prefligt() {
 		},
 	}
 
+	var err error
 	globalAgent, err = agent.New(agentConfig)
 	if err != nil {
 		exitf("create sdk agent failed: %v", err)
