@@ -24,5 +24,5 @@ func (h *HTTPHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Do implements plugins.HTTPDoer.
 func (c *HTTPClientWrapper) Do(req *http.Request) (*http.Response, error) {
-	return c.client.DoWithAppSpan(req, req.Method+" "+req.URL.Path)
+	return c.client.Do(req)
 }
