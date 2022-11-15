@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// for override MarshalJSON
+	// SpanModel is for override MarshalJSON
 	SpanModel model.SpanModel
 
 	// Span represents a Zipkin span.

@@ -8,14 +8,14 @@ import (
 )
 
 func TestSpac(t *testing.T) {
-	bodyJson := `{"reporter.output.server":"https://127.0.0.1:32430/report/application-tracing-log"}`
+	bodyJSON := `{"reporter.output.server":"https://127.0.0.1:32430/report/application-tracing-log"}`
 	var spec Spec
-	err := json.Unmarshal([]byte(bodyJson), &spec)
+	err := json.Unmarshal([]byte(bodyJSON), &spec)
 	assert.Nil(t, err)
 	// assert.isNil(t, "err", err)
 
-	bodyJson = `{"reporter.output.server":"https://127.0.0.1:32430/report/application-tracing-log", "reporter.output.server.tls.key": "-----BEGIN PRIVATE KEY-----"}`
+	bodyJSON = `{"reporter.output.server":"https://127.0.0.1:32430/report/application-tracing-log", "reporter.output.server.tls.key": "-----BEGIN PRIVATE KEY-----"}`
 	var spec2 Spec
-	err = json.Unmarshal([]byte(bodyJson), &spec2)
+	err = json.Unmarshal([]byte(bodyJSON), &spec2)
 	assert.Nil(t, err)
 }

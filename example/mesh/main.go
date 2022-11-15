@@ -120,12 +120,11 @@ var (
 			KindField: zipkinplugin.Kind,
 		},
 
-		EnableTLS: true,
+		EnableTLS: false,
 
 		EnableBasicAuth: false,
 
 		TracingType: "log-tracing",
-		Hostport:    ":80",
 
 		SampleRate:  1,
 		SharedSpans: true,
@@ -133,7 +132,7 @@ var (
 	}
 )
 
-func setZipkinTLS() {
+func setZipkinSpec() {
 	const (
 		// NOTE: Just show the available endpoints.
 		cnURL         = "https://monitor.megaease.cn:32430/report/application-tracing-log"
@@ -143,11 +142,26 @@ func setZipkinTLS() {
 
 	log.Printf("zipkin url: %s", zipKinURL)
 
+	zipkinSpec.Hostport = fmt.Sprintf("%s:80", globalHostName)
+	zipkinSpec.OutputServerURL = zipKinURL
+
+	if zipkinSpec.Tags == nil {
+		zipkinSpec.Tags = make(map[string]string)
+	}
+
+	zipkinSpec.Tags["hostname"] = globalHostName
+
+	if strings.Contains(globalHostName, "shadow") {
+		zipkinSpec.Tags["label.local"] = "shadow"
+		zipkinSpec.Tags["label.remote"] = "shadow"
+	}
+
 	if zipKinURL == "" {
+		zipkinSpec.EnableTLS = false
 		return
 	}
 
-	zipkinSpec.OutputServerURL = zipKinURL
+	zipkinSpec.EnableTLS = true
 
 	var certFile, keyFile, caCertFile string
 	if strings.Contains(zipKinURL, ".com") {
@@ -197,13 +211,14 @@ func completeAnotherServiceName(anotherService string) string {
 
 func prefligt() {
 	globalHostName, _ = os.Hostname()
+	log.Printf("hostname: %s", globalHostName)
 
 	initServiceName()
 	log.Printf("full service name: %s", fullServiceName)
 	log.Printf("internal service name: %s", internalServiceName)
 
 	zipkinSpec.ServiceName = fullServiceName
-	setZipkinTLS()
+	setZipkinSpec()
 
 	if fullServiceName == "" {
 		exitf("empty serviceName")
@@ -445,7 +460,9 @@ func (h *serviceHandler) handleRestaurant(serverReq *http.Request, body []byte) 
 	}
 
 	deliveryTime := deliveryResponse.DeliveryTime
-	if internalServiceName == restaurantBeijingAndroidService {
+	// beijing-android restaurant service
+	if strings.Contains(globalHostName, "beijing") &&
+		strings.Contains(globalHostName, "android") {
 		deliveryTime += " (cook duration: 5m)"
 	}
 
@@ -455,7 +472,9 @@ func (h *serviceHandler) handleRestaurant(serverReq *http.Request, body []byte) 
 		DeliveryTime: deliveryTime,
 	}
 
-	if internalServiceName == restaurantAndroidService {
+	// android restaurant service
+	if strings.Contains(globalHostName, "android") &&
+		!strings.Contains(globalHostName, "beijing") {
 		if deliveryResponse.Late != nil && *deliveryResponse.Late {
 			resp.Coupon = "$5"
 		}
@@ -477,7 +496,9 @@ func (h *serviceHandler) handleDelivery(serverReq *http.Request, body []byte) (i
 
 	deliveryTime := time.Now().Add(10 * time.Minute).Local().Format(timeFormat)
 
-	if internalServiceName == deliveryBeijingService {
+	// beijing delivery service
+	if strings.Contains(globalHostName, "beijing") &&
+		!strings.Contains(globalHostName, "android") {
 		deliveryTime += " (road duration: 7m)"
 	}
 
@@ -487,7 +508,8 @@ func (h *serviceHandler) handleDelivery(serverReq *http.Request, body []byte) (i
 		DeliveryTime: deliveryTime,
 	}
 
-	if internalServiceName == deliveryAndroidService {
+	if strings.Contains(globalHostName, "android") &&
+		!strings.Contains(globalHostName, "beijing") {
 		late := true
 		resp.Late = &late
 	}
