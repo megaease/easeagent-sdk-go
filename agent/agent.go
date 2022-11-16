@@ -71,6 +71,16 @@ func New(config *Config) (*Agent, error) {
 	return agent, nil
 }
 
+//get Plugin by name
+func (a *Agent) GetPlugin(name string) plugins.Plugin {
+	for _, plug := range a.plugins {
+		if plug.Name() == name {
+			return plug
+		}
+	}
+	return nil
+}
+
 // ServeHTTP invokes every plugin which is http.Handler to handle the request.
 // NOTE: If the request is not matched for your plugin, don't do anything.
 func (a *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {

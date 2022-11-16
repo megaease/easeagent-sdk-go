@@ -104,6 +104,10 @@ func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	return mesh, nil
 }
 
+func (mesh *EaseMesh) Name() string {
+	return mesh.spec.Name()
+}
+
 // HandleAgentRequest handles the agent request.
 func (mesh *EaseMesh) HandleAgentRequest(w http.ResponseWriter, r *http.Request) bool {
 	switch r.URL.Path {

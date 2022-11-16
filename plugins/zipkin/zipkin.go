@@ -41,7 +41,7 @@ type (
 func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	spec := pluginSpec.(Spec)
 
-	endpoint, err := newEndpoint(spec.ServiceName, spec.Hostport)
+	endpoint, err := NewEndpoint(spec.ServiceName, spec.Hostport)
 	if err != nil {
 		return nil, fmt.Errorf("new endpoint failed: %v", err)
 	}
@@ -76,7 +76,7 @@ func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	return z, nil
 }
 
-func newEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
+func NewEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
 	host, port, err := net.SplitHostPort(hostPort)
 	if err != nil {
 		return nil, err
@@ -99,6 +99,10 @@ func newEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
 		}
 	}
 	return zipkin.NewEndpoint(serviceName, fmt.Sprintf("%s:%s", host, port))
+}
+
+func (z *Zipkin) Name() string {
+	return z.spec.Name()
 }
 
 // Close closes the plugin.
@@ -140,4 +144,38 @@ func (z *Zipkin) WrapUserClientRequest(current context.Context, req *http.Reques
 	span := zipkin.SpanFromContext(current)
 	ctx := zipkin.NewContext(req.Context(), span)
 	return req.WithContext(ctx)
+}
+
+//start a Span from parent
+func (z *Zipkin) StartSpan(parent zipkin.Span, name string, options ...zipkin.SpanOption) zipkin.Span {
+	if parent == nil {
+		return z.tracer.StartSpan(name, options...)
+	}
+	options = append(options, zipkin.Parent(parent.Context()))
+	return z.tracer.StartSpan(name, options...)
+}
+
+//start a Span from context.Context
+func (z *Zipkin) StartSpanFromCtx(parent context.Context, name string, options ...zipkin.SpanOption) (zipkin.Span, context.Context) {
+	return z.tracer.StartSpanFromContext(parent, name, options...)
+}
+
+//start a middleware span from parent
+func (z *Zipkin) StartMWSpan(parent zipkin.Span, name string, mwType MiddlewareType, options ...zipkin.SpanOption) zipkin.Span {
+	os := make([]zipkin.SpanOption, 0)
+	os = append(os, zipkin.Kind(model.Client))
+	os = append(os, options...)
+	span := z.StartSpan(parent, name, os...)
+	span.Tag(MIDDLEWARE_TAG, mwType.TagValue())
+	return span
+}
+
+//start a middleware span from context.Context
+func (z *Zipkin) StartMWSpanFromCtx(parent context.Context, name string, mwType MiddlewareType, options ...zipkin.SpanOption) (zipkin.Span, context.Context) {
+	os := make([]zipkin.SpanOption, 0)
+	os = append(os, zipkin.Kind(model.Client))
+	os = append(os, options...)
+	span, ctx := z.StartSpanFromCtx(parent, name, os...)
+	span.Tag(MIDDLEWARE_TAG, mwType.TagValue())
+	return span, ctx
 }

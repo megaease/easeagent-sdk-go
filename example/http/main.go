@@ -20,6 +20,7 @@ const (
 )
 
 var easeagent = newAgent(hostPort)
+var zipkinAgent = easeagent.GetPlugin(zipkin.NAME).(*zipkin.Zipkin)
 
 // new agent
 func newAgent(hostport string) *agent.Agent {
@@ -74,7 +75,7 @@ func LoadSpecFromYamlFile(filePath string) (*zipkin.Spec, error) {
 		return nil, fmt.Errorf("unmarshal %s to %T failed: %v", bodyJson, spec, err)
 	}
 	spec.KindField = zipkin.Kind
-	spec.NameField = spec.ServiceName
+	spec.NameField = zipkin.NAME
 	return &spec, nil
 }
 
@@ -86,6 +87,7 @@ func otherFunc() http.HandlerFunc {
 }
 
 // http server /some_function span_1
+//  - redis get key
 // 	- http client WrapHttpRequest(span_1(tracing info))  -> span_2
 // 		- http server /other_function 2 -> span_3
 
@@ -104,9 +106,17 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		// span := zipkin.SpanFromContext(current)
-		// ctx := zipkin.NewContext(req.Context(), span)
-		// newRequest = req.WithContext(ctx)
+
+		//send mysql span
+		mysqlSpan, _ := zipkinAgent.StartMWSpanFromCtx(r.Context(), "redis-get_key", zipkin.Redis)
+		if err != nil {
+			log.Printf("unable to create span: %+v\n", err)
+			http.Error(w, err.Error(), 500)
+			return
+		} else if endpoint, err := zipkin.NewEndpoint("redis-local_server", "127.0.0.1:8090"); err == nil {
+			mysqlSpan.SetRemoteEndpoint(endpoint)
+		}
+		mysqlSpan.Finish()
 
 		// set server span for parent
 		newRequest = easeagent.WrapHTTPRequest(r.Context(), newRequest)
@@ -115,8 +125,9 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 			log.Printf("call to other_function returned error: %+v\n", err)
 			http.Error(w, err.Error(), 500)
 			return
-
 		}
+
+		// tracing
 		_ = res.Body.Close()
 	}
 }

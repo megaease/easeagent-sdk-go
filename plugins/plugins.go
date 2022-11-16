@@ -11,6 +11,7 @@ type (
 	// Plugin is the plugin interface.
 	Plugin interface {
 		Close() error
+		Name() string
 	}
 
 	// AgentHandler is the handler to handle requests from agent port (default 9900).

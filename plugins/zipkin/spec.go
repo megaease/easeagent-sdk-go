@@ -9,6 +9,7 @@ import (
 const (
 	// Kind is the kind of Zipkin plugin.
 	Kind = "Zipkin"
+	NAME = "Zipkin"
 )
 
 type (
@@ -43,7 +44,7 @@ func DefaultSpec() plugins.Spec {
 	return Spec{
 		BaseSpec: plugins.BaseSpec{
 			KindField: Kind,
-			NameField: "default-name",
+			NameField: NAME,
 		},
 		OutputServerURL: "https://127.0.0.1:8080/report",
 
