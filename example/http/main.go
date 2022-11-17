@@ -24,15 +24,16 @@ var zipkinAgent = easeagent.GetPlugin(zipkin.NAME).(*zipkin.Zipkin)
 
 // new agent
 func newAgent(hostport string) *agent.Agent {
-	// fileConfigPath := os.Getenv("MEGAEASE_SDK_CONFIG_FILE")
-	// if fileConfigPath == "" {
-	// 	fileConfigPath = "/megaease/sdk/agent.yml"
-	// }
-	// spec, err := LoadSpecFromYamlFile(fileConfigPath)
-	// zipkinSpec := *spec
-	// exitfIfErr(err, "new zipkin spec fail: %v", err)
-	zipkinSpec := zipkin.DefaultSpec().(zipkin.Spec)
-	zipkinSpec.OutputServerURL = "" // report to log when output server is ""
+	fileConfigPath := os.Getenv("MEGAEASE_SDK_CONFIG_FILE")
+	var zipkinSpec zipkin.Spec
+	if fileConfigPath == "" {
+		zipkinSpec = zipkin.DefaultSpec().(zipkin.Spec)
+		zipkinSpec.OutputServerURL = "" // report to log when output server is ""
+	} else {
+		spec, err := LoadSpecFromYamlFile(fileConfigPath)
+		exitfIfErr(err, "new zipkin spec fail: %v", err)
+		zipkinSpec = *spec
+	}
 	zipkinSpec.Hostport = hostport
 	agent, err := agent.New(&agent.Config{
 		Plugins: []plugins.Spec{
