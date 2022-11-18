@@ -108,13 +108,9 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 			return
 		}
 
-		//send mysql span
+		//send redis span
 		mysqlSpan, _ := zipkinAgent.StartMWSpanFromCtx(r.Context(), "redis-get_key", zipkin.Redis)
-		if err != nil {
-			log.Printf("unable to create span: %+v\n", err)
-			http.Error(w, err.Error(), 500)
-			return
-		} else if endpoint, err := zipkin.NewEndpoint("redis-local_server", "127.0.0.1:8090"); err == nil {
+		if endpoint, err := zipkin.NewEndpoint("redis-local_server", "127.0.0.1:8090"); err == nil {
 			mysqlSpan.SetRemoteEndpoint(endpoint)
 		}
 		mysqlSpan.Finish()
