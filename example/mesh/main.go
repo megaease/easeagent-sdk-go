@@ -126,9 +126,10 @@ var (
 
 		TracingType: "log-tracing",
 
-		SampleRate:  1,
-		SharedSpans: true,
-		ID128Bit:    false,
+		EnableTracing: true,
+		SampleRate:    1,
+		SharedSpans:   true,
+		ID128Bit:      false,
 	}
 )
 

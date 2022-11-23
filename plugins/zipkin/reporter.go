@@ -3,14 +3,16 @@ package zipkin
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/openzipkin/zipkin-go/model"
 	"github.com/openzipkin/zipkin-go/reporter"
 	zipkinHttpReporter "github.com/openzipkin/zipkin-go/reporter/http"
-	logreporter "github.com/openzipkin/zipkin-go/reporter/log"
 )
 
 type (
@@ -21,11 +23,17 @@ type (
 
 		next http.RoundTripper
 	}
+
+	// logReporter will send spans to the default Go Logger.
+	logReporter struct {
+		logger     *log.Logger
+		serializer *spanJSONSerializer
+	}
 )
 
 func newReporter(spec Spec) (reporter.Reporter, error) {
 	if spec.OutputServerURL == "" {
-		return logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags)), nil
+		return newLogReporter(spec), nil
 	}
 
 	httpClient, err := newHTTPClient(spec)
@@ -90,3 +98,21 @@ func (a *AuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.SetBasicAuth(a.username, a.password)
 	return a.next.RoundTrip(req)
 }
+
+// NewReporter returns a new log reporter.
+func newLogReporter(spec Spec) reporter.Reporter {
+	return &logReporter{
+		logger:     log.New(os.Stderr, "", log.LstdFlags),
+		serializer: newSpanSerializer(spec),
+	}
+}
+
+// Send outputs a span to the Go logger.
+func (r *logReporter) Send(s model.SpanModel) {
+	if b, err := json.MarshalIndent(r.serializer.WarpSpan(&s), "", "  "); err == nil {
+		r.logger.Printf("%s:\n%s\n\n", time.Now(), string(b))
+	}
+}
+
+// Close closes the reporter
+func (*logReporter) Close() error { return nil }

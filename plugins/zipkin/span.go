@@ -14,9 +14,9 @@ type (
 
 	// Span represents a Zipkin span.
 	Span struct {
-		SpanModel
-		Type    string `json:"type,omitempty"`
-		Service string `json:"service,omitempty"`
+		SpanModel `json:",inline"`
+		Type      string `json:"type,omitempty"`
+		Service   string `json:"service,omitempty"`
 	}
 )
 

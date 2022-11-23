@@ -33,9 +33,10 @@ type (
 		Hostport    string            `json:"hostport"`
 		Tags        map[string]string `json:"tags"`
 
-		SampleRate  float64 `json:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
-		SharedSpans bool    `json:"tracing.shared.spans"`
-		ID128Bit    bool    `json:"tracing.id128bit"`
+		EnableTracing bool    `json:"tracing.enable" jsonschema:"required,minimum=0,maximum=1"`
+		SampleRate    float64 `json:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
+		SharedSpans   bool    `json:"tracing.shared.spans"`
+		ID128Bit      bool    `json:"tracing.id128bit"`
 	}
 )
 
@@ -52,9 +53,10 @@ func DefaultSpec() plugins.Spec {
 
 		EnableBasicAuth: false,
 
-		ServiceName: "default-service",
-		TracingType: "log-tracing",
-		Hostport:    "127.0.0.1:80",
+		EnableTracing: true,
+		ServiceName:   "default-service",
+		TracingType:   "log-tracing",
+		Hostport:      "127.0.0.1:80",
 
 		SampleRate:  1,
 		SharedSpans: true,

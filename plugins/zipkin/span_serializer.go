@@ -5,7 +5,6 @@ import (
 
 	"github.com/openzipkin/zipkin-go"
 	"github.com/openzipkin/zipkin-go/model"
-	"github.com/openzipkin/zipkin-go/reporter"
 )
 
 type spanJSONSerializer struct {
@@ -16,14 +15,18 @@ type spanJSONSerializer struct {
 func (s spanJSONSerializer) Serialize(spans []*model.SpanModel) ([]byte, error) {
 	newSpans := make([]*Span, 0)
 	for i := 0; i < len(spans); i++ {
-		span := &Span{
-			SpanModel: s.getSpanModel(spans[i]),
-			Type:      s.tracingType,
-			Service:   s.serviceName,
-		}
+		span := s.WarpSpan(spans[i])
 		newSpans = append(newSpans, span)
 	}
 	return json.Marshal(newSpans)
+}
+
+func (s spanJSONSerializer) WarpSpan(span *model.SpanModel) *Span {
+	return &Span{
+		SpanModel: s.getSpanModel(span),
+		Type:      s.tracingType,
+		Service:   s.serviceName,
+	}
 }
 
 func (s spanJSONSerializer) getSpanModel(span *model.SpanModel) SpanModel {
@@ -54,7 +57,7 @@ func (s spanJSONSerializer) ContentType() string {
 	return "application/json"
 }
 
-func newSpanSerializer(spec Spec) reporter.SpanSerializer {
+func newSpanSerializer(spec Spec) *spanJSONSerializer {
 	return &spanJSONSerializer{
 		serviceName: spec.ServiceName,
 		tracingType: spec.TracingType,

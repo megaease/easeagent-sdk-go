@@ -20,7 +20,7 @@ const (
 )
 
 var easeagent = newAgent(hostPort)
-var zipkinAgent = easeagent.GetPlugin(zipkin.NAME).(*zipkin.Zipkin)
+var tracing = easeagent.GetPlugin(zipkin.NAME).(zipkin.Tracing)
 
 // new agent
 func newAgent(hostport string) *agent.Agent {
@@ -57,7 +57,7 @@ func LoadSpecFromYamlFile(filePath string) (*zipkin.Spec, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read config file :%s failed: %v", filePath, err)
 	}
-	fmt.Println(string(buff))
+	// fmt.Println(string(buff))
 	var body map[string]interface{}
 	err = yaml.Unmarshal(buff, &body)
 	if err != nil {
@@ -109,11 +109,11 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 		}
 
 		//send redis span
-		mysqlSpan, _ := zipkinAgent.StartMWSpanFromCtx(r.Context(), "redis-get_key", zipkin.Redis)
+		redisSpan, _ := tracing.StartMWSpanFromCtx(r.Context(), "redis-get_key", zipkin.Redis)
 		if endpoint, err := zipkin.NewEndpoint("redis-local_server", "127.0.0.1:8090"); err == nil {
-			mysqlSpan.SetRemoteEndpoint(endpoint)
+			redisSpan.SetRemoteEndpoint(endpoint)
 		}
-		mysqlSpan.Finish()
+		redisSpan.Finish()
 
 		// set server span for parent
 		newRequest = easeagent.WrapHTTPRequest(r.Context(), newRequest)

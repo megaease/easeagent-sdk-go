@@ -15,7 +15,7 @@ const (
 func (t MiddlewareType) TagValue() string {
 	switch t {
 	case MySql:
-		return "database"
+		return "database" //for datastore ui
 	case Redis, ElasticSearch, Kafka, RabbitMQ, MongoDB:
 		return string(t)
 	default:

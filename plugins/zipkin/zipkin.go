@@ -28,6 +28,19 @@ func init() {
 }
 
 type (
+	Tracing interface {
+		//get zipkin Tracer
+		Tracer() *zipkin.Tracer
+		//start a Span from parent
+		StartSpan(parent zipkin.Span, name string, options ...zipkin.SpanOption) zipkin.Span
+		//start a Span from context.Context
+		StartSpanFromCtx(parent context.Context, name string, options ...zipkin.SpanOption) (zipkin.Span, context.Context)
+		//start a middleware span from parent
+		StartMWSpan(parent zipkin.Span, name string, mwType MiddlewareType, options ...zipkin.SpanOption) zipkin.Span
+		//start a middleware span from context.Context
+		StartMWSpanFromCtx(parent context.Context, name string, mwType MiddlewareType, options ...zipkin.SpanOption) (zipkin.Span, context.Context)
+	}
+
 	// Zipkin is the Zipkin dedicated plugin.
 	Zipkin struct {
 		spec Spec
@@ -51,9 +64,12 @@ func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 		return nil, fmt.Errorf("new reporter failed: %v", err)
 	}
 
-	sampler, err := zipkingo.NewBoundarySampler(spec.SampleRate, time.Now().Unix())
-	if err != nil {
-		return nil, fmt.Errorf("new sampler failed: %v", err)
+	sampler := zipkingo.NeverSample
+	if spec.EnableTracing {
+		sampler, err = zipkingo.NewBoundarySampler(spec.SampleRate, time.Now().Unix())
+		if err != nil {
+			return nil, fmt.Errorf("new sampler failed: %v", err)
+		}
 	}
 
 	tracer, err := zipkin.NewTracer(reporter,
@@ -125,7 +141,7 @@ func (z *Zipkin) WrapUserClient(c plugins.HTTPDoer) plugins.HTTPDoer {
 	if original, ok := c.(*http.Client); ok {
 		client, err := zipkinhttp.NewClient(z.tracer,
 			zipkinhttp.WithClient(original),
-			zipkinhttp.ClientTrace(true),
+			zipkinhttp.ClientTrace(z.spec.EnableTracing),
 		)
 		if err != nil {
 			log.Printf("unable to create client: %+v\n", err)
@@ -144,6 +160,10 @@ func (z *Zipkin) WrapUserClientRequest(current context.Context, req *http.Reques
 	span := zipkin.SpanFromContext(current)
 	ctx := zipkin.NewContext(req.Context(), span)
 	return req.WithContext(ctx)
+}
+
+func (z *Zipkin) Tracer() *zipkin.Tracer {
+	return z.tracer
 }
 
 //start a Span from parent
