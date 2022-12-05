@@ -47,4 +47,51 @@ Use a remote ServiceName with an `{type}-{name}` prefix.  When no `name`, just `
 
 ### How to decorate your spans with tags?
 
-Use a tag key with an `{type}.` prefix. like `http.method`.
+The following tags are commonly used conventional tags in 'MegaCloud'.
+
+#### MySql
+| Tag            | description                            |
+|----------------|----------------------------------------|
+| component.type | middleware type, final value: database |
+| sql            | query mysql sql                        |
+| url            | database connect url                   |
+
+#### Redis
+| Tag            | description                         |
+|----------------|-------------------------------------|
+| component.type | middleware type, final value: redis |
+| redis.method   | the redis cmd                       |
+
+#### ElasticSearch
+| Tag            | description                                 |
+|----------------|---------------------------------------------|
+| component.type | middleware type, final value: elasticsearch |
+| es.index       | the es index                                |
+| es.operation   | the request Http Method and Endpoint        |
+| es.body        | the es request entity body                  |
+
+#### Kafka
+| Tag            | description                           |
+|----------------|---------------------------------------|
+| component.type | middleware type, final value: kafka   |
+| kafka.topic    | kafka producer or consumer topic      |
+| kafka.key      | kafka producer or consumer key        |
+| kafka.broker   | kafka producer or consumer broker uri |
+
+
+#### RabbitMQ
+| Tag                | description                            |
+|--------------------|----------------------------------------|
+| component.type     | middleware type, final value: rabbitmq |
+| rabbit.exchange    | redis request name of the exchange     |
+| rabbit.routing_key | redis received routing key             |
+| rabbit.queue       | redis request name of queue            |
+| rabbit.broker      | redis request broker uri               |
+
+#### MongoDB
+| Tag                | description                           |
+|--------------------|---------------------------------------|
+| component.type     | middleware type, final value: mongodb |
+| mongodb.command    | mongodb request command               |
+| mongodb.collection | mongodb requst collection             |
+| mongodb.cluster_id | mongodb requst cluster_id             |

@@ -1,6 +1,20 @@
 # easeagent-sdk-go
 
 A lightweight & opening Go SDK for Cloud-Native and APM system
+
+- [easeagent-sdk-go](#easeagent-sdk-go)
+  - [Overview](#overview)
+    - [Principles](#principles)
+  - [Features](#features)
+  - [QuickStart](#quickstart)
+    - [Init Agent](#init-agent)
+      - [1. Get SDK](#1-get-sdk)
+      - [2. Import package](#2-import-package)
+      - [3. New Agent](#3-new-agent)
+    - [Warp Http Server](#warp-http-server)
+  - [Example](#example)
+  - [About MegaCloud](#about-megacloud)
+
 ## Overview
 
 - EaseAgent SDK can collect distributed application tracing, which could be used in the APM system and improve the observability of a distributed system. for the tracing, EaseAgent SDK follows the [Google Dapper](https://research.google/pubs/pub36356/) paper. 
@@ -38,7 +52,7 @@ go get github.com/megaease/easeagent-sdk-go
 
 ```go
 import (
-	"github.com/megaease/easeagent-sdk-go/agent"
+    "github.com/megaease/easeagent-sdk-go/agent"
     "github.com/megaease/easeagent-sdk-go/plugins/zipkin"
 )
 ```
@@ -88,6 +102,6 @@ func main() {
 ## About MegaCloud 
 1. [Use SDK in MegaCloud](./doc/how-to-use.md)
 2. Get MegaCloud Config. [About MegaCloud Config](./doc/megacloud-config.md)
-3. [Decorate the Span](./doc/middleware-span.md). please use api: `zipkin.Tracing.StartMWSpan` and `zipkin.Tracing.StartMWSpanFromCtx` for Decorate Span.
+3. [Decorate the Span](./doc/middleware-span.md). please use api: `zipkin.Tracing.StartMWSpan` and `zipkin.Tracing.StartMWSpanFromCtx` for decorate Span.
 
 

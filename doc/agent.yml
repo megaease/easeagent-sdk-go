@@ -1,0 +1,11 @@
+service_name: zone.damoin.service
+tracing_type: log-tracing
+tracing.enable: true
+tracing.sample.rate: 1.0
+tracing.shared.spans: true
+tracing.id128bit: false
+reporter.output.server: http://localhost:9411/api/v2/spans
+reporter.output.server.tls.enable: false
+reporter.output.server.tls.key: ""
+reporter.output.server.tls.cert: ""
+reporter.output.server.tls.ca_cert: ""
