@@ -14,6 +14,8 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
     - [Warp Http Server](#warp-http-server)
   - [Example](#example)
   - [About MegaCloud](#about-megacloud)
+  - [Community](#community)
+  - [Licenses](#licenses)
 
 ## Overview
 
@@ -104,4 +106,15 @@ func main() {
 2. Get MegaCloud Config. [About MegaCloud Config](./doc/megacloud-config.md)
 3. [Decorate the Span](./doc/middleware-span.md). please use api: `zipkin.Tracing.StartMWSpan` and `zipkin.Tracing.StartMWSpanFromCtx` for decorate Span.
 
+## Community
+
+* [Github Issues](https://github.com/megaease/easeagent-php-go/issues)
+* [Join Slack Workspace](https://join.slack.com/t/openmegaease/shared_invite/zt-upo7v306-lYPHvVwKnvwlqR0Zl2vveA) for requirement, issue and development.
+* [MegaEase on Twitter](https://twitter.com/megaease)
+
+If you have any questions, welcome to discuss them in our community. Welcome to join!
+
+
+## Licenses
+EaseAgent Go SDK is licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
 
