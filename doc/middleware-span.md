@@ -67,7 +67,7 @@ The following tags are commonly used conventional tags in 'MegaCloud'.
 |----------------|---------------------------------------------|
 | component.type | middleware type, final value: elasticsearch |
 | es.index       | the es index                                |
-| es.operation   | the request Http Method and Endpoint        |
+| es.operation   | the request HTTP Method and Endpoint        |
 | es.body        | the es request entity body                  |
 
 #### Kafka

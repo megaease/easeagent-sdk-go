@@ -54,7 +54,7 @@ type (
 func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	spec := pluginSpec.(Spec)
 
-	endpoint, err := NewEndpoint(spec.ServiceName, spec.Hostport)
+	endpoint, err := NewEndpoint(spec.ServiceName, spec.LocalHostport)
 	if err != nil {
 		return nil, fmt.Errorf("new endpoint failed: %v", err)
 	}

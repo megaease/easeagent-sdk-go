@@ -82,7 +82,7 @@ func LoadSpecFromYamlFile(filePath string, hostport string) (*zipkin.Spec, error
 	return &spec, nil
 }
 ```
-### Third: Wrap Http
+### Third: Wrap HTTP
 
 ##### 1. Wrap Server Handler 
 ```go

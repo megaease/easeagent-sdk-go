@@ -143,7 +143,7 @@ func setZipkinSpec() {
 
 	log.Printf("zipkin url: %s", zipKinURL)
 
-	zipkinSpec.Hostport = fmt.Sprintf("%s:80", globalHostName)
+	zipkinSpec.LocalHostport = fmt.Sprintf("%s:80", globalHostName)
 	zipkinSpec.OutputServerURL = zipKinURL
 
 	if zipkinSpec.Tags == nil {

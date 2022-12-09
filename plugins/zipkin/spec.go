@@ -28,10 +28,10 @@ type (
 		Username        string `json:"reporter.output.server.auth.username"`
 		Password        string `json:"reporter.output.server.auth.password"`
 
-		ServiceName string            `json:"service_name"`
-		TracingType string            `json:"tracing_type"`
-		Hostport    string            `json:"hostport"`
-		Tags        map[string]string `json:"tags"`
+		ServiceName   string            `json:"service_name"`
+		TracingType   string            `json:"tracing_type"`
+		LocalHostport string            `json:"-"`
+		Tags          map[string]string `json:"tags"`
 
 		EnableTracing bool    `json:"tracing.enable" jsonschema:"required,minimum=0,maximum=1"`
 		SampleRate    float64 `json:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
@@ -56,7 +56,7 @@ func DefaultSpec() plugins.Spec {
 		EnableTracing: true,
 		ServiceName:   "default-service",
 		TracingType:   "log-tracing",
-		Hostport:      "127.0.0.1:80",
+		LocalHostport: "127.0.0.1:80",
 
 		SampleRate:  1,
 		SharedSpans: true,

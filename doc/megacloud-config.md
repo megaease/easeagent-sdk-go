@@ -14,7 +14,7 @@ service_name: zone.domain.service
 
 ## 2. Reporter
 
-MegaCloud uses http to receive data, so you need to change the configuration to http and MegaCloud's address.
+MegaCloud uses HTTP to receive data, so you need to change the configuration to HTTP and MegaCloud's address.
 ```yaml
 reporter.output.server: {MEGA_CLOUD_URL}/application-tracing-log
 ```

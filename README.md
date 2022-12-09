@@ -11,7 +11,7 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
       - [1. Get SDK](#1-get-sdk)
       - [2. Import package](#2-import-package)
       - [3. New Agent](#3-new-agent)
-    - [Warp Http Server](#warp-http-server)
+    - [Warp HTTP Server](#warp-http-server)
   - [Example](#example)
   - [About MegaCloud](#about-megacloud)
   - [Community](#community)
@@ -30,16 +30,16 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
 - Design for Micro-Service architecture, collecting the data from a service perspective.
 
 ## Features
-* Easy to use. It is right out of the box for Http Server Tracing.
+* Easy to use. It is right out of the box for HTTP Server Tracing.
   * Collecting Tracing Logs.
-    * Http Server
-    * Http Client
+    * HTTP Server
+    * HTTP Client
     * Supplying the `health check` endpoint
   * Decorate the Span API for Middleware
 
 * Data Reports
   * Console Reporter.
-  * Http Reporter.
+  * HTTP Reporter.
 
 * Standardization
     * The tracing data format is fully compatible with the Zipkin data format.
@@ -79,7 +79,7 @@ func newAgent(hostport string) *agent.Agent {
 	return agent
 }
 ```
-### Warp Http Server
+### Warp HTTP Server
 ```go
 func otherFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +97,7 @@ func main() {
 ```
 ## Example
 
-1. [http example](./example/http/main.go)
+1. [HTTP example](./example/http/main.go)
 
 2. [mesh example](./example/mesh/main.go)
 
