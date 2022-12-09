@@ -28,6 +28,7 @@ func init() {
 }
 
 type (
+	//Tracing the tracing interface
 	Tracing interface {
 		//get zipkin Tracer
 		Tracer() *zipkin.Tracer
@@ -54,7 +55,7 @@ type (
 func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	spec := pluginSpec.(Spec)
 
-	endpoint, err := NewEndpoint(spec.ServiceName, spec.LocalHostport)
+	endpoint, err := newLocalEndpoint(spec.ServiceName, spec.LocalHostport)
 	if err != nil {
 		return nil, fmt.Errorf("new endpoint failed: %v", err)
 	}
@@ -92,15 +93,17 @@ func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	return z, nil
 }
 
-func NewEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
+func newLocalEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
+	if hostPort == "" {
+		return NewEndpointByName(serviceName), nil
+	}
 	host, port, err := net.SplitHostPort(hostPort)
 	if err != nil {
 		return nil, err
 	}
 	if host != "" {
-		return zipkin.NewEndpoint(serviceName, hostPort)
+		return NewEndpoint(serviceName, hostPort)
 	}
-
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return nil, err
@@ -114,9 +117,22 @@ func NewEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
 			}
 		}
 	}
-	return zipkin.NewEndpoint(serviceName, fmt.Sprintf("%s:%s", host, port))
+	return NewEndpoint(serviceName, fmt.Sprintf("%s:%s", host, port))
 }
 
+//NewEndpointByName new a model.Endpoint by service name
+func NewEndpointByName(serviceName string) *model.Endpoint {
+	return &model.Endpoint{
+		ServiceName: serviceName,
+	}
+}
+
+//NewEndpoint new a model.Endpoint
+func NewEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
+	return zipkin.NewEndpoint(serviceName, hostPort)
+}
+
+//Name get the zipkin name
 func (z *Zipkin) Name() string {
 	return z.spec.Name()
 }
@@ -162,11 +178,12 @@ func (z *Zipkin) WrapUserClientRequest(current context.Context, req *http.Reques
 	return req.WithContext(ctx)
 }
 
+//Tracer get the zipkin.Tracer
 func (z *Zipkin) Tracer() *zipkin.Tracer {
 	return z.tracer
 }
 
-//start a Span from parent
+//StartSpan start a Span from parent
 func (z *Zipkin) StartSpan(parent zipkin.Span, name string, options ...zipkin.SpanOption) zipkin.Span {
 	if parent == nil {
 		return z.tracer.StartSpan(name, options...)
@@ -175,27 +192,27 @@ func (z *Zipkin) StartSpan(parent zipkin.Span, name string, options ...zipkin.Sp
 	return z.tracer.StartSpan(name, options...)
 }
 
-//start a Span from context.Context
+//StartSpanFromCtx start a Span from context.Context
 func (z *Zipkin) StartSpanFromCtx(parent context.Context, name string, options ...zipkin.SpanOption) (zipkin.Span, context.Context) {
 	return z.tracer.StartSpanFromContext(parent, name, options...)
 }
 
-//start a middleware span from parent
+//StartMWSpan start a middleware span from parent
 func (z *Zipkin) StartMWSpan(parent zipkin.Span, name string, mwType MiddlewareType, options ...zipkin.SpanOption) zipkin.Span {
 	os := make([]zipkin.SpanOption, 0)
 	os = append(os, zipkin.Kind(model.Client))
 	os = append(os, options...)
 	span := z.StartSpan(parent, name, os...)
-	span.Tag(MIDDLEWARE_TAG, mwType.TagValue())
+	span.Tag(MiddlewareTag, mwType.TagValue())
 	return span
 }
 
-//start a middleware span from context.Context
+//StartMWSpanFromCtx start a middleware span from context.Context
 func (z *Zipkin) StartMWSpanFromCtx(parent context.Context, name string, mwType MiddlewareType, options ...zipkin.SpanOption) (zipkin.Span, context.Context) {
 	os := make([]zipkin.SpanOption, 0)
 	os = append(os, zipkin.Kind(model.Client))
 	os = append(os, options...)
 	span, ctx := z.StartSpanFromCtx(parent, name, os...)
-	span.Tag(MIDDLEWARE_TAG, mwType.TagValue())
+	span.Tag(MiddlewareTag, mwType.TagValue())
 	return span, ctx
 }

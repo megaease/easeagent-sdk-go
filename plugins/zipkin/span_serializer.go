@@ -3,7 +3,6 @@ package zipkin
 import (
 	"encoding/json"
 
-	"github.com/openzipkin/zipkin-go"
 	"github.com/openzipkin/zipkin-go/model"
 )
 
@@ -35,16 +34,12 @@ func (s spanJSONSerializer) getSpanModel(span *model.SpanModel) SpanModel {
 }
 
 func (s spanJSONSerializer) getRemoteEndpoint(span *model.SpanModel) *model.Endpoint {
-	mwTagValue, ok := span.Tags[MIDDLEWARE_TAG]
+	mwTagValue, ok := span.Tags[MiddlewareTag]
 	if !ok {
 		return span.RemoteEndpoint
 	}
 	if span.RemoteEndpoint == nil {
-		if endpoint, err := zipkin.NewEndpoint(mwTagValue, ""); err == nil {
-			return endpoint
-		} else {
-			return nil
-		}
+		return NewEndpointByName(mwTagValue)
 	}
 	if span.RemoteEndpoint.ServiceName == "" {
 		span.RemoteEndpoint.ServiceName = mwTagValue

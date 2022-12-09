@@ -13,7 +13,7 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
       - [3. New Agent](#3-new-agent)
     - [Warp HTTP Server](#warp-http-server)
   - [Example](#example)
-  - [About MegaCloud](#about-megacloud)
+  - [About MegaEase Cloud](#about-megaease-cloud)
   - [Community](#community)
   - [Licenses](#licenses)
 
@@ -21,7 +21,7 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
 
 - EaseAgent SDK can collect distributed application tracing, which could be used in the APM system and improve the observability of a distributed system. for the tracing, EaseAgent SDK follows the [Google Dapper](https://research.google/pubs/pub36356/) paper. 
 - EaseAgent SDK also can work with Cloud-Native architecture. For example, it can help Service Mesh (especially for [EaseMesh](https://github.com/megaease/easemesh/) ) to do some control panel work.
-- EaseAgent SDK also can work with [MegaCloud](https://cloud.megaease.com/). For example, it can monitor for service by Go Docker APP.
+- EaseAgent SDK also can work with [MegaEase Cloud](https://cloud.megaease.com/). For example, it can monitor for service by Go Docker APP.
 
 ### Principles
 - Safe to Go application/service.
@@ -60,39 +60,17 @@ import (
 ```
 #### 3. New Agent
 ```go
-var easeagent = newAgent(hostPort)
-
-// new agent
-func newAgent(hostport string) *agent.Agent {
-    zipkinSpec = zipkin.DefaultSpec().(zipkin.Spec)
-	zipkinSpec.OutputServerURL = "" // report to log when output server is ""
-	zipkinSpec.Hostport = hostport
-	agent, err := agent.New(&agent.Config{
-		Plugins: []plugins.Spec{
-			zipkinSpec,
-		},
-	})
-	if err != nil {
-		fmt.Fprintf("new agent fail: %v", err)
-	    os.Exit(1)
-	}
-	return agent
-}
+// new tracing agent from yaml file and set host and port of Span.localEndpoint
+// By default, use yamlFile="" is Console Reporter for tracing.
+// By default, use localHostPort="" is not set host and port of Span.localEndpoint.
+var easeagent, _ = agent.NewWithOptions(agent.WithZipkinYaml(os.Getenv("EASEAGENT_CONFIG"), ":8090"))
 ```
 ### Warp HTTP Server
 ```go
-func otherFunc() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("other_function called with method: %s\n", r.Method)
-		time.Sleep(50 * time.Millisecond)
-	}
-}
-
 func main() {
 	// initialize router
 	router := http.NewServeMux()
-	router.HandleFunc("/other_function", otherFunc())
-	http.ListenAndServe(hostPort, easeagent.WrapUserHandler(router))
+	http.ListenAndServe(":8090", easeagent.WrapUserHandler(router))
 }
 ```
 ## Example
@@ -101,9 +79,9 @@ func main() {
 
 2. [mesh example](./example/mesh/main.go)
 
-## About MegaCloud 
-1. [Use SDK in MegaCloud](./doc/how-to-use.md)
-2. Get MegaCloud Config. [About MegaCloud Config](./doc/megacloud-config.md)
+## About MegaEase Cloud 
+1. [Use SDK in MegaEase Cloud](./doc/how-to-use.md)
+2. Get MegaEase Cloud Config. [About MegaEase Cloud Config](./doc/megaease-cloud-config.md)
 3. [Decorate the Span](./doc/middleware-span.md). please use api: `zipkin.Tracing.StartMWSpan` and `zipkin.Tracing.StartMWSpanFromCtx` for decorate Span.
 
 ## Community

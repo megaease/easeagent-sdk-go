@@ -1,10 +1,10 @@
 # Decorate spans with attributes
 
-This document will explain how to add attributes to trace data sent to the MegaCloud so that spans display specific properties in the UI.
+This document will explain how to add attributes to trace data sent to the MegaEase Cloud so that spans display specific properties in the UI.
 
 ## Why decorate your spans?
 
-When you send data to our MegaCloud, you can add custom attributes to spans. For example, you might decide to add tags like order.id or user.id in order to help you analyze your trace data.
+When you send data to our MegaEase Cloud, you can add custom attributes to spans. For example, you might decide to add tags like order.id or user.id in order to help you analyze your trace data.
 
 Some expected attribute values cause our distributed tracing UI to display some specific trace properties and details.
 
@@ -19,9 +19,9 @@ Decorating your spans to show specific properties in our UI can help you:
 
 ## How to decorate your spans for Middleware?
 
-This table explains how to get `spans` sent to the MegaCloud to show up with specific `Middleware` in the UI.
+This table explains how to get `spans` sent to the MegaEase Cloud to show up with specific `Middleware` in the UI.
 
-Use a `tag` with a key `component.type`，Different types represent different `Middleware`. The following is a list of special middleware for `MegaCloud`.
+Use a `tag` with a key `component.type`，Different types represent different `Middleware`. The following is a list of special middleware for `MegaEase Cloud`.
 
 |  Middleware   |     value     |
 | ------------- | ------------- |
@@ -33,7 +33,7 @@ Use a `tag` with a key `component.type`，Different types represent different `M
 | MongoDB       | mongodb       |
 | Motan         | motan         |
 
-Use a remote ServiceName with an `{type}-{name}` prefix.  When no `name`, just `type`. The following is a list of special middleware remote ServiceName for `MegaCloud`.
+Use a remote ServiceName with an `{type}-{name}` prefix.  When no `name`, just `type`. The following is a list of special middleware remote ServiceName for `MegaEase Cloud`.
 
 |  Middleware   |       value       |
 | ------------- | ----------------- |
@@ -47,7 +47,7 @@ Use a remote ServiceName with an `{type}-{name}` prefix.  When no `name`, just `
 
 ### How to decorate your spans with tags?
 
-The following tags are commonly used conventional tags in 'MegaCloud'.
+The following tags are commonly used conventional tags in 'MegaEase Cloud'.
 
 #### MySql
 | Tag            | description                            |

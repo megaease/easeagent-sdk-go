@@ -12,11 +12,13 @@ import (
 )
 
 const (
-	hostPort = ":8090"
+	localHostPort = ":8090"
 )
 
-// new tracing agent
-var easeagent, _ = agent.NewWithOptions(agent.WithZipkinYaml(os.Getenv("EASEAGENT_CONFIG"), hostPort))
+// new tracing agent from yaml file and set host and port of Span.localEndpoint
+// By default, use yamlFile="" is Console Reporter for tracing.
+// By default, use localHostPort="" is not set host and port of Span.localEndpoint.
+var easeagent, _ = agent.NewWithOptions(agent.WithZipkinYaml(os.Getenv("EASEAGENT_CONFIG"), localHostPort))
 var tracing = easeagent.GetPlugin(zipkin.NAME).(zipkin.Tracing)
 
 func otherFunc() http.HandlerFunc {
@@ -71,7 +73,7 @@ func someFunc(url string, client plugins.HTTPDoer) http.HandlerFunc {
 func main() {
 	// initialize router
 	router := http.NewServeMux()
-	router.HandleFunc("/some_function", someFunc("http://"+hostPort, easeagent.WrapUserClient(&http.Client{})))
+	router.HandleFunc("/some_function", someFunc("http://"+localHostPort, easeagent.WrapUserClient(&http.Client{})))
 	router.HandleFunc("/other_function", otherFunc())
-	http.ListenAndServe(hostPort, easeagent.WrapUserHandler(router))
+	http.ListenAndServe(localHostPort, easeagent.WrapUserHandler(router))
 }

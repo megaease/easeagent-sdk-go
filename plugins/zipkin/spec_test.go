@@ -27,10 +27,10 @@ func TestYamlToSpac(t *testing.T) {
 	err := yaml.Unmarshal([]byte(yamlContext), &body)
 	assert.Nil(t, err)
 
-	bodyJson, err := json.Marshal(body)
+	bodyJSON, err := json.Marshal(body)
 	assert.Nil(t, err)
 	var spec Spec
-	err = json.Unmarshal(bodyJson, &spec)
+	err = json.Unmarshal(bodyJSON, &spec)
 	assert.Nil(t, err)
 	assert.Equal(t, "demo.go.test-service", spec.ServiceName)
 	assert.Equal(t, "log-tracing", spec.TracingType)

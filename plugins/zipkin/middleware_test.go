@@ -7,7 +7,7 @@ import (
 )
 
 func TestTagValue(t *testing.T) {
-	assert.Equal(t, "database", MySql.TagValue())
+	assert.Equal(t, "database", MySQL.TagValue())
 	assert.Equal(t, "redis", Redis.TagValue())
 	assert.Equal(t, "elasticsearch", ElasticSearch.TagValue())
 	assert.Equal(t, "kafka", Kafka.TagValue())

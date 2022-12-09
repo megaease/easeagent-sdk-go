@@ -9,6 +9,7 @@ import (
 const (
 	// Kind is the kind of Zipkin plugin.
 	Kind = "Zipkin"
+	// NAME is the name of Zipkin plugin.
 	NAME = "Zipkin"
 )
 
@@ -64,6 +65,14 @@ func DefaultSpec() plugins.Spec {
 		Username:    "",
 		Password:    "",
 	}
+}
+
+//NewConsoleReportSpec new a Console Reporter Spec
+func NewConsoleReportSpec(localHostPort string) Spec {
+	spec := DefaultSpec().(Spec)
+	spec.OutputServerURL = "" // report to log when output server is ""
+	spec.LocalHostport = localHostPort
+	return spec
 }
 
 // Validate validates the Zipkin spec.

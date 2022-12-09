@@ -1,4 +1,4 @@
-# MegaCloud Configuration
+# MegaEase Cloud Configuration
 
 Modify the [agent.yml](./agent.yml) file to configure your information.
 
@@ -6,7 +6,7 @@ Modify the [agent.yml](./agent.yml) file to configure your information.
 
 You'll service_name to find your data later. It's important to use a unique and meaningful name.
 
-The service_name of megacloud consists of three parts: zone, domain, name. They are joined by `.` into `ServiceName`
+The service_name of MegaEase Cloud consists of three parts: zone, domain, name. They are joined by `.` into `ServiceName`
 
 ```yaml
 service_name: zone.domain.service
@@ -14,13 +14,13 @@ service_name: zone.domain.service
 
 ## 2. Reporter
 
-MegaCloud uses HTTP to receive data, so you need to change the configuration to HTTP and MegaCloud's address.
+MegaEase Cloud uses HTTP to receive data, so you need to change the configuration to HTTP and MegaEase Cloud's address.
 ```yaml
 reporter.output.server: {MEGA_CLOUD_URL}/application-tracing-log
 ```
 ## 3. MTLS
 
-MTLS is a secure authentication protocol for EaseAgent to connect to MegaCloud.
+MTLS is a secure authentication protocol for EaseAgent to connect to MegaEase Cloud.
 
 Config: Get TLS
 ```yaml
@@ -39,6 +39,6 @@ tracing.sample.rate: 1.0
 
 ## Third: About `MEGA_CLOUD_URL` And `TLS`
 
-When you download the `agent.yaml` file through our megacloud, `MEGA_CLOUD_URL` and `TLS` will be filled in for you automatically.
+When you download the `agent.yaml` file through our MegaEase Cloud, `MEGA_CLOUD_URL` and `TLS` will be filled in for you automatically.
 
 If you need it separately, please download the `agent.yaml` and get it by yourself.
