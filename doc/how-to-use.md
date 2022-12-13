@@ -24,9 +24,9 @@ const (
 	localHostPort = ":8090" // your server host and port for
 )
 // new tracing agent from yaml file and set host and port of Span.localEndpoint
-// By default, use yamlFile="" is Console Reporter for tracing.
+// By default, use yamlFile="" is use easemesh.DefaultSpec() and Console Reporter for tracing.
 // By default, use localHostPort="" is not set host and port of Span.localEndpoint.
-var easeagent, _ = agent.NewWithOptions(agent.WithZipkinYAML(os.Getenv("EASEAGENT_CONFIG"), localHostPort))
+var easeagent, _ = agent.NewWithOptions(agent.WithYAML(os.Getenv("EASEAGENT_CONFIG"), localHostPort))
 var tracing = easeagent.GetPlugin(zipkin.NAME).(zipkin.Tracing)
 ```
 ### Third: Wrapping HTTP
