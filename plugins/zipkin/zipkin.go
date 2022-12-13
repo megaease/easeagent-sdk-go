@@ -132,7 +132,7 @@ func NewEndpoint(serviceName string, hostPort string) (*model.Endpoint, error) {
 	return zipkin.NewEndpoint(serviceName, hostPort)
 }
 
-// Name get the zipkin name
+// Name gets the zipkin name
 func (z *Zipkin) Name() string {
 	return z.spec.Name()
 }
@@ -178,7 +178,7 @@ func (z *Zipkin) WrapUserClientRequest(current context.Context, req *http.Reques
 	return req.WithContext(ctx)
 }
 
-// Tracer get the zipkin.Tracer
+// Tracer gets the zipkin.Tracer
 func (z *Zipkin) Tracer() *zipkin.Tracer {
 	return z.tracer
 }
