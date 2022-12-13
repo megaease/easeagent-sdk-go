@@ -53,6 +53,11 @@ func New(spec plugins.Spec) (plugins.Plugin, error) {
 	return h, nil
 }
 
+//Name get the Health name
+func (h *Health) Name() string {
+	return h.spec.Name()
+}
+
 // HandleAgentRequest handles the agent request.
 func (h *Health) HandleAgentRequest(w http.ResponseWriter, r *http.Request) bool {
 	switch r.URL.Path {
