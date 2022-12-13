@@ -1,4 +1,4 @@
-package Health
+package health
 
 import (
 	"net/http"
@@ -9,11 +9,18 @@ import (
 const (
 	// Kind is the kind of Health plugin.
 	Kind = "Health"
+	// Name is the name of Health plugin.
+	Name = "Health"
 )
 
 // DefaultSpec returns the default spec of Health.
 func DefaultSpec() plugins.Spec {
-	return Spec{}
+	return Spec{
+		BaseSpec: plugins.BaseSpec{
+			KindField: Kind,
+			NameField: Name,
+		},
+	}
 }
 
 func init() {

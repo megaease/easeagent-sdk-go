@@ -16,6 +16,8 @@ import (
 const (
 	// Kind is the kind of EaseMesh plugin.
 	Kind = "EaseMesh"
+	// Name is the Name of EaseMesh plugin.
+	Name = "EaseMesh"
 
 	defaultAgentType    = "GoSDK"
 	defaultAgentVersion = "v0.1.0"

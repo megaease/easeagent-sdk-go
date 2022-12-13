@@ -9,8 +9,8 @@ import (
 const (
 	// Kind is the kind of Zipkin plugin.
 	Kind = "Zipkin"
-	// NAME is the name of Zipkin plugin.
-	NAME = "Zipkin"
+	// Name is the name of Zipkin plugin.
+	Name = "Zipkin"
 )
 
 type (
@@ -29,8 +29,8 @@ type (
 		Username        string `json:"reporter.output.server.auth.username"`
 		Password        string `json:"reporter.output.server.auth.password"`
 
-		ServiceName   string            `json:"service_name"`
-		TracingType   string            `json:"tracing_type"`
+		ServiceName   string            `json:"serviceName"`
+		TracingType   string            `json:"tracing.type"`
 		LocalHostport string            `json:"-"`
 		Tags          map[string]string `json:"tags"`
 
@@ -46,7 +46,7 @@ func DefaultSpec() plugins.Spec {
 	return Spec{
 		BaseSpec: plugins.BaseSpec{
 			KindField: Kind,
-			NameField: NAME,
+			NameField: Name,
 		},
 		OutputServerURL: "https://127.0.0.1:8080/report",
 

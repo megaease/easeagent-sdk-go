@@ -2,10 +2,13 @@ package agent
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 
 	"github.com/megaease/easeagent-sdk-go/plugins"
+	"github.com/megaease/easeagent-sdk-go/plugins/easemesh"
+	"github.com/megaease/easeagent-sdk-go/plugins/health"
 	"github.com/megaease/easeagent-sdk-go/plugins/zipkin"
 	"gopkg.in/yaml.v2"
 )
@@ -43,36 +46,83 @@ func WithSpec(spec plugins.Spec) ConfigOption {
 	}
 }
 
+// WithZipkinYAML Append easemesh spec load from yaml file to the Agent Plugin Spec.
+// @param  yamlFile string yaml file path. use yamlFile="" is use easemesh.DefaultSpec() for
+// @return ConfigOption
+func WithEaseMeshYAML(yamlFile string) ConfigOption {
+	return func(c *Config) {
+		var easeMeshSpec easemesh.Spec
+		var spec plugins.Spec
+		if bodyJSON, err := yamlToJSON(yamlFile); err != nil {
+			log.Printf("yaml to json failed: %v, use default easemesh spec", err)
+			spec = easemesh.DefaultSpec()
+		} else if err = json.Unmarshal(bodyJSON, &easeMeshSpec); err != nil {
+			log.Printf("unmarshal %s to %T failed: %v, use default easemesh spec", bodyJSON, spec, err)
+			spec = easemesh.DefaultSpec()
+		} else {
+			easeMeshSpec.KindField = easemesh.Kind
+			easeMeshSpec.NameField = easemesh.Name
+			spec = easeMeshSpec
+		}
+		c.Plugins = append(c.Plugins, spec)
+	}
+}
+
 // WithZipkinYAML Append zipkin spec load from yaml file to the Agent Plugin Spec.
 //  			  sets host and port of the tracer Span.localEndpoint.
 // @param  yamlFile string yaml file path. use yamlFile="" is Console Reporter for tracing.
 // @param  localHostPort string host and port of the tracer Span.localEndpoint.
-// 								By default, use localHostPort="" is not set host and port of Span.localEndpoint.
+// 								By default, use localHostPort="" is not sets host and port of Span.localEndpoint.
 // @return ConfigOption
 func WithZipkinYAML(yamlFile string, localHostPort string) ConfigOption {
 	return func(c *Config) {
 		var spec zipkin.Spec
-		var body map[string]interface{}
-		if yamlFile == "" {
-			log.Printf("yamlFile was '', use default Console Reporter for tracing.")
-			spec = zipkin.NewConsoleReportSpec(localHostPort)
-		} else if buff, err := ioutil.ReadFile(yamlFile); err != nil {
-			log.Printf("read config file:%s failed: %v, use default Console Reporter for tracing.", yamlFile, err)
-			spec = zipkin.NewConsoleReportSpec(localHostPort)
-		} else if err = yaml.Unmarshal(buff, &body); err != nil {
-			log.Printf("unmarshal yaml file %s to map failed: %v, use default Console Reporter for tracing.", yamlFile, err)
-			spec = zipkin.NewConsoleReportSpec(localHostPort)
-		} else if bodyJSON, err := json.Marshal(body); err != nil {
-			log.Printf("marshal yaml file %s to json failed: %v, use default Console Reporter for tracing.", yamlFile, err)
+		if bodyJSON, err := yamlToJSON(yamlFile); err != nil {
+			log.Printf("yaml to json failed: %v, use default Console Reporter for tracing", err)
 			spec = zipkin.NewConsoleReportSpec(localHostPort)
 		} else if err = json.Unmarshal(bodyJSON, &spec); err != nil {
 			log.Printf("unmarshal %s to %T failed: %v, use default Console Reporter for tracing.", bodyJSON, spec, err)
 			spec = zipkin.NewConsoleReportSpec(localHostPort)
 		} else {
 			spec.KindField = zipkin.Kind
-			spec.NameField = zipkin.NAME
+			spec.NameField = zipkin.Name
 			spec.LocalHostport = localHostPort
 		}
 		c.Plugins = append(c.Plugins, spec)
+	}
+}
+
+// WithYAML sets address, Append health, easemesh and zipkin spec load from yaml file to the Agent Plugin Spec.
+// @param  yamlFile string yaml file path. use yamlFile="" is use easemesh.DefaultSpec() and Console Reporter for tracing.
+// @param  localHostPort string host and port of the tracer Span.localEndpoint.
+// 								By default, use localHostPort="" is not sets host and port of Span.localEndpoint.
+// @return ConfigOption
+func WithYAML(yamlFile string, localHostPort string) ConfigOption {
+	return func(c *Config) {
+		bodyJSON, err := yamlToJSON(yamlFile)
+		if err == nil {
+			err = json.Unmarshal(bodyJSON, &c)
+			if err != nil {
+				log.Printf("unmarshal %s to %T failed: %v, can't load base config", bodyJSON, c, err)
+			}
+		}
+		c.Plugins = append(c.Plugins, health.DefaultSpec())
+		WithEaseMeshYAML(yamlFile)(c)
+		WithZipkinYAML(yamlFile, localHostPort)(c)
+	}
+}
+
+func yamlToJSON(yamlFile string) ([]byte, error) {
+	var body map[string]interface{}
+	if yamlFile == "" {
+		return nil, fmt.Errorf("yamlFile was ''")
+	} else if buff, err := ioutil.ReadFile(yamlFile); err != nil {
+		return nil, fmt.Errorf("read config file:%s failed: %v", yamlFile, err)
+	} else if err = yaml.Unmarshal(buff, &body); err != nil {
+		return nil, fmt.Errorf("unmarshal yaml file %s to map failed: %v", yamlFile, err)
+	} else if bodyJSON, err := json.Marshal(body); err != nil {
+		return nil, fmt.Errorf("marshal yaml file %s to json failed: %v", yamlFile, err)
+	} else {
+		return bodyJSON, err
 	}
 }
