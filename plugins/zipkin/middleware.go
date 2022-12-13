@@ -1,6 +1,6 @@
 package zipkin
 
-//MiddlewareType A special type about middleware
+// MiddlewareType A special type about middleware
 type MiddlewareType string
 
 // decorate a special type Span by tag
@@ -14,7 +14,7 @@ const (
 	MongoDB       MiddlewareType = "mongodb"
 )
 
-//TagValue return the middleware tag value for decorate Span
+// TagValue return the middleware tag value for decorate Span
 func (t MiddlewareType) TagValue() string {
 	switch t {
 	case MySQL:

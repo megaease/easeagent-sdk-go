@@ -71,7 +71,7 @@ func New(config *Config) (*Agent, error) {
 	return agent, nil
 }
 
-//GetPlugin get Plugin by name
+// GetPlugin gets Plugin by name
 func (a *Agent) GetPlugin(name string) plugins.Plugin {
 	for _, plug := range a.plugins {
 		if plug.Name() == name {

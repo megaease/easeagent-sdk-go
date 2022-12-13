@@ -67,7 +67,7 @@ func DefaultSpec() plugins.Spec {
 	}
 }
 
-//NewConsoleReportSpec new a Console Reporter Spec
+// NewConsoleReportSpec new a Console Reporter Spec
 func NewConsoleReportSpec(localHostPort string) Spec {
 	spec := DefaultSpec().(Spec)
 	spec.OutputServerURL = "" // report to log when output server is ""

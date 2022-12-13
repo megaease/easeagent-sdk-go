@@ -53,7 +53,7 @@ func New(spec plugins.Spec) (plugins.Plugin, error) {
 	return h, nil
 }
 
-//Name get the Health name
+// Name get the Health name
 func (h *Health) Name() string {
 	return h.spec.Name()
 }

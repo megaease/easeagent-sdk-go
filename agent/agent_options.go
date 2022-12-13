@@ -43,13 +43,13 @@ func WithSpec(spec plugins.Spec) ConfigOption {
 	}
 }
 
-// WithZipkinYaml Append zipkin spec load from yaml file to the Agent Plugin Spec.
+// WithZipkinYAML Append zipkin spec load from yaml file to the Agent Plugin Spec.
 //  			  sets host and port of the tracer Span.localEndpoint.
 // @param  yamlFile string yaml file path. use yamlFile="" is Console Reporter for tracing.
 // @param  localHostPort string host and port of the tracer Span.localEndpoint.
 // 								By default, use localHostPort="" is not set host and port of Span.localEndpoint.
 // @return ConfigOption
-func WithZipkinYaml(yamlFile string, localHostPort string) ConfigOption {
+func WithZipkinYAML(yamlFile string, localHostPort string) ConfigOption {
 	return func(c *Config) {
 		var spec zipkin.Spec
 		var body map[string]interface{}

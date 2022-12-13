@@ -104,6 +104,7 @@ func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	return mesh, nil
 }
 
+// Name get the EaseMesh name
 func (mesh *EaseMesh) Name() string {
 	return mesh.spec.Name()
 }
