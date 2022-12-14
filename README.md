@@ -12,6 +12,7 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
       - [2. Import package](#2-import-package)
       - [3. New Agent](#3-new-agent)
     - [Wrapping HTTP Server](#wrapping-http-server)
+  - [Documentation](#documentation)
   - [Example](#example)
   - [About MegaEase Cloud](#about-megaease-cloud)
   - [Community](#community)
@@ -73,6 +74,10 @@ func main() {
 	http.ListenAndServe(":8090", easeagent.WrapUserHandler(router))
 }
 ```
+
+## Documentation
+[About Config](./doc/about-config.md)
+
 ## Example
 
 1. [HTTP example](./example/http/main.go)
