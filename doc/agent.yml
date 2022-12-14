@@ -1,6 +1,5 @@
 serviceName: zone.damoin.service
 address: ":9900"
-agentType: "GoSDK"
 tracing.type: log-tracing
 tracing.enable: true
 tracing.sample.rate: 1.0

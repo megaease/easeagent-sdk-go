@@ -37,7 +37,17 @@ tracing.enable: true
 tracing.sample.rate: 1.0
 ```
 
-## Third: About `MEGAEASE_CLOUD_URL` And `TLS`
+## Third: About MegaEase Cloud
+
+### Download agent.yaml
+
+Login: [MegaEase Cloud](https://cloud.megaease.com/) -> `[stack]`->`[document]`->`[Go]`
+
+1. Input `zone`, `domain`, `service`
+2. Input `Sampled` if you want
+3. Click `Submit And Download`
+
+### About `MEGAEASE_CLOUD_URL` And `TLS`
 
 When you download the `agent.yaml` file through our MegaEase Cloud, `MEGAEASE_CLOUD_URL` and `TLS` will be filled in for you automatically.
 
