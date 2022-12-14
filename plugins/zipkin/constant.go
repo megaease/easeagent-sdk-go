@@ -1,6 +1,6 @@
 package zipkin
 
-//For details, please see 'doc/middleware-span.md'
+// For details, please see 'doc/middleware-span.md'
 const (
 	HTTPTagAttributeRoute = "http.route"
 	HTTPTagMethod         = "http.method"

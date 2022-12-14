@@ -11,7 +11,7 @@ A lightweight & opening Go SDK for Cloud-Native and APM system
       - [1. Get SDK](#1-get-sdk)
       - [2. Import package](#2-import-package)
       - [3. New Agent](#3-new-agent)
-    - [Warp HTTP Server](#warp-http-server)
+    - [Wrapping HTTP Server](#wrapping-http-server)
   - [Example](#example)
   - [About MegaEase Cloud](#about-megaease-cloud)
   - [Community](#community)
@@ -60,12 +60,12 @@ import (
 ```
 #### 3. New Agent
 ```go
-// new tracing agent from yaml file and set host and port of Span.localEndpoint
-// By default, use yamlFile="" is Console Reporter for tracing.
+// new tracing agent from yaml file and sets host and port of Span.localEndpoint
+// By default, use yamlFile="" is use easemesh.DefaultSpec() and Console Reporter for tracing.
 // By default, use localHostPort="" is not set host and port of Span.localEndpoint.
-var easeagent, _ = agent.NewWithOptions(agent.WithZipkinYaml(os.Getenv("EASEAGENT_CONFIG"), ":8090"))
+var easeagent, _ = agent.NewWithOptions(agent.WithYAML(os.Getenv("EASEAGENT_CONFIG"), ":8090"))
 ```
-### Warp HTTP Server
+### Wrapping HTTP Server
 ```go
 func main() {
 	// initialize router

@@ -16,6 +16,8 @@ import (
 const (
 	// Kind is the kind of EaseMesh plugin.
 	Kind = "EaseMesh"
+	// Name is the Name of EaseMesh plugin.
+	Name = "EaseMesh"
 
 	defaultAgentType    = "GoSDK"
 	defaultAgentVersion = "v0.1.0"
@@ -104,6 +106,7 @@ func New(pluginSpec plugins.Spec) (plugins.Plugin, error) {
 	return mesh, nil
 }
 
+// Name gets the EaseMesh name
 func (mesh *EaseMesh) Name() string {
 	return mesh.spec.Name()
 }

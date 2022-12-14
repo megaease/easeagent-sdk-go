@@ -16,10 +16,18 @@ const (
 )
 
 // new tracing agent from yaml file and set host and port of Span.localEndpoint
-// By default, use yamlFile="" is Console Reporter for tracing.
+// By default, use yamlFile="" is use easemesh.DefaultSpec() and Console Reporter for tracing.
 // By default, use localHostPort="" is not set host and port of Span.localEndpoint.
-var easeagent, _ = agent.NewWithOptions(agent.WithZipkinYaml(os.Getenv("EASEAGENT_CONFIG"), localHostPort))
-var tracing = easeagent.GetPlugin(zipkin.NAME).(zipkin.Tracing)
+var easeagent, _ = agent.NewWithOptions(agent.WithYAML(os.Getenv("EASEAGENT_CONFIG"), localHostPort))
+var tracing = easeagent.GetPlugin(zipkin.Name).(zipkin.Tracing)
+
+// var tracing = func() zipkin.Tracing {
+// 	if easeagent_err != nil {
+// 		log.Printf("new easeagent error : %v", easeagent_err)
+// 		os.Exit(1)
+// 	}
+// 	return easeagent.GetPlugin(zipkin.Name).(zipkin.Tracing)
+// }()
 
 func otherFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
