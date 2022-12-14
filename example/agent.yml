@@ -10,4 +10,4 @@ reporter.output.server: ""
 reporter.output.server.tls.enable: false
 reporter.output.server.tls.key: ""
 reporter.output.server.tls.cert: ""
-reporter.output.server.tls.ca_cert: ""
+reporter.output.server.tls.caCert: ""

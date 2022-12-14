@@ -23,7 +23,7 @@ type (
 		EnableTLS bool   `json:"reporter.output.server.tls.enable"`
 		TLSKey    string `json:"reporter.output.server.tls.key"`
 		TLSCert   string `json:"reporter.output.server.tls.cert"`
-		TLSCaCert string `json:"reporter.output.server.tls.ca_cert"`
+		TLSCaCert string `json:"reporter.output.server.tls.caCert"`
 
 		EnableBasicAuth bool   `json:"reporter.output.server.auth.enable"`
 		Username        string `json:"reporter.output.server.auth.username"`
