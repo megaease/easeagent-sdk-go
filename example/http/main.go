@@ -15,6 +15,10 @@ const (
 	localHostPort = ":8090"
 )
 
+// If you want to publish the `docker app` through the `cloud of megaease` and send the monitoring data to the `cloud`,
+// please obtain the configuration file path through the environment variable `EASEAGENT_CONFIG`.
+// We will pass it to you the `cloud configuration` file path.
+
 // new tracing agent from yaml file and set host and port of Span.localEndpoint
 // By default, use yamlFile="" is use easemesh.DefaultSpec() and Console Reporter for tracing.
 // By default, use localHostPort="" is not set host and port of Span.localEndpoint.

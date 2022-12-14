@@ -16,7 +16,7 @@ serviceName: zone.domain.service
 
 MegaEase Cloud uses HTTP to receive data, so you need to change the configuration to HTTP and MegaEase Cloud's address.
 ```yaml
-reporter.output.server: {MEGA_CLOUD_URL}/application-tracing-log
+reporter.output.server: {MEGAEASE_CLOUD_URL}/application-tracing-log
 ```
 ## 3. MTLS
 
@@ -37,8 +37,8 @@ tracing.enable: true
 tracing.sample.rate: 1.0
 ```
 
-## Third: About `MEGA_CLOUD_URL` And `TLS`
+## Third: About `MEGAEASE_CLOUD_URL` And `TLS`
 
-When you download the `agent.yaml` file through our MegaEase Cloud, `MEGA_CLOUD_URL` and `TLS` will be filled in for you automatically.
+When you download the `agent.yaml` file through our MegaEase Cloud, `MEGAEASE_CLOUD_URL` and `TLS` will be filled in for you automatically.
 
 If you need it separately, please download the `agent.yaml` and get it by yourself.
