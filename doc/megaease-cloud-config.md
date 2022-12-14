@@ -4,12 +4,12 @@ Modify the [agent.yml](./agent.yml) file to configure your information.
 
 ## 1. Name
 
-You'll service_name to find your data later. It's important to use a unique and meaningful name.
+You'll serviceName to find your data later. It's important to use a unique and meaningful name.
 
-The service_name of MegaEase Cloud consists of three parts: zone, domain, name. They are joined by `.` into `ServiceName`
+The serviceName of MegaEase Cloud consists of three parts: zone, domain, name. They are joined by `.` into `ServiceName`
 
 ```yaml
-service_name: zone.domain.service
+serviceName: zone.domain.service
 ```
 
 ## 2. Reporter
@@ -32,7 +32,7 @@ reporter.output.server.tls.cert: YOUR_TLS_CERT
 ## 4. Tracing
 we have some
 ```yaml
-tracing_type: log-tracing
+tracing.type: log-tracing
 tracing.enable: true
 tracing.sample.rate: 1.0
 ```

@@ -126,3 +126,16 @@ func yamlToJSON(yamlFile string) ([]byte, error) {
 		return bodyJSON, err
 	}
 }
+
+// WithZipkinTags sets tags of Zipkin Plugin Spec
+// @param tags the Span tags of tracing
+func WithZipkinTags(tags map[string]string) ConfigOption {
+	return func(c *Config) {
+		for i := 0; i < len(c.Plugins); i++ {
+			plugin := c.Plugins[i]
+			if zipkinSpec, ok := plugin.(zipkin.Spec); ok {
+				zipkinSpec.Tags = tags
+			}
+		}
+	}
+}

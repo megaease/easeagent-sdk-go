@@ -32,7 +32,7 @@ type (
 		ServiceName   string            `json:"serviceName"`
 		TracingType   string            `json:"tracing.type"`
 		LocalHostport string            `json:"-"`
-		Tags          map[string]string `json:"tags"`
+		Tags          map[string]string `json:"-"`
 
 		EnableTracing bool    `json:"tracing.enable" jsonschema:"required,minimum=0,maximum=1"`
 		SampleRate    float64 `json:"tracing.sample.rate" jsonschema:"required,minimum=0,maximum=1"`
