@@ -21,7 +21,6 @@ There are currently the following configurations.
 |-------------|---------------------------------------|---------------------|
 | serviceName | string, the name of your service      | zone.damoin.service |
 | address     | string, the sdk api host port address | 127.0.0.1:9900      |
-| agentType   | string, the sdk agent type            | GoSDK               |
 
 ## Dedicated configuration
 
