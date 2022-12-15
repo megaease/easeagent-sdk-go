@@ -13,7 +13,7 @@ FROM alpine:3.16
 
 WORKDIR /opt/meshdemo
 
-COPY entrypoint.sh /
+COPY ./example/mesh/entrypoint.sh /
 COPY --from=builder /opt/meshdemo/bin/ /opt/meshdemo/bin/
 COPY --from=builder /opt/meshdemo/tls* /opt/meshdemo/
 
