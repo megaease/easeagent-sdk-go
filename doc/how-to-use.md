@@ -49,7 +49,10 @@ newRequest = easeagent.WrapHTTPRequest(serverRequest.Context(), newRequest)
 res, err := client.Do(newRequest)
 ```
 
-##### 3. Tracing middleware
+##### 3. Decorate middleware span
+
+We provide an interface so that you can decorate the Span of the middleware, please refer to another [document](./megaease-cloud-config.md) for the reason of decoration.
+
 ```go
 //send redis span
 redisSpan, _ := tracing.StartMWSpanFromCtx(r.Context(), "redis-get_key", zipkin.Redis)
