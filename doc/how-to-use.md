@@ -51,7 +51,7 @@ res, err := client.Do(newRequest)
 
 ##### 3. Decorate middleware span
 
-We provide an interface so that you can decorate the Span of the middleware, please refer to another [document](./megaease-cloud-config.md) for the reason of decoration.
+We provide an interface so that you can decorate the Span of the middleware, please refer to another [document](https://github.com/megaease/easeagent-sdk-go/blob/main/doc/megaease-cloud-config.md) for the reason of decoration.
 
 ```go
 //send redis span
@@ -62,4 +62,4 @@ if endpoint, err := zipkin.NewEndpoint("redis-local_server", "127.0.0.1:8090"); 
 redisSpan.Finish()
 ```
 ## Example
-[HTTP example](../example/http/main.go)
+[HTTP example](https://github.com/megaease/easeagent-sdk-go/blob/main/example/http/main.go)
