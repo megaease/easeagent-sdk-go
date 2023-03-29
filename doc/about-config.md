@@ -10,7 +10,7 @@ it is divided into two parts configuration:
 1. Common configuration
 2. Dedicated configuration
 
-Example: [agent.yml](../example/agent.yml) 
+Example: [agent.yml](https://github.com/megaease/easeagent-sdk-go/blob/main/example/agent.yml) 
 
 ## Common configuration
 It is a configuration common to the entire SDK. These public configurations should have no dots `.`
