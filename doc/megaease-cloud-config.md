@@ -1,6 +1,6 @@
 # MegaEase Cloud Configuration
 
-Modify the [agent.yml](./agent.yml) file to configure your information.
+Modify the [agent.yml](https://github.com/megaease/easeagent-sdk-go/blob/main/example/agent.yml) file to configure your information.
 
 ## 1. Name
 
